@@ -264,7 +264,7 @@ export type Database = {
       }
       streams: {
         Row: {
-          academic_year_id: string | null
+          academic_year_id: string
           class_id: string
           created_at: string
           full_name: string
@@ -273,7 +273,7 @@ export type Database = {
           tenant_id: string
         }
         Insert: {
-          academic_year_id?: string | null
+          academic_year_id: string
           class_id: string
           created_at?: string
           full_name: string
@@ -282,7 +282,7 @@ export type Database = {
           tenant_id: string
         }
         Update: {
-          academic_year_id?: string | null
+          academic_year_id?: string
           class_id?: string
           created_at?: string
           full_name?: string
@@ -385,6 +385,14 @@ export type Database = {
     }
     Functions: {
       claim_tenant: { Args: { p_tenant: string }; Returns: string }
+      clone_streams: {
+        Args: { p_from_year: string; p_replace?: boolean; p_to_year: string }
+        Returns: number
+      }
+      ensure_streams: {
+        Args: { p_labels?: string[]; p_tenant: string; p_year: string }
+        Returns: number
+      }
     }
     Enums: {
       app_role:
