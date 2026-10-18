@@ -1,6 +1,11 @@
 import 'server-only'
 import { connection } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import {
+  summarizeAttendance,
+  type AttendanceSummary,
+} from '@/features/students/attendance-summary'
+import type { QuickFilter, StatusFilter } from '@/features/students/master-filters'
 
 export interface GuardianSummary {
   id: string
@@ -46,6 +51,13 @@ export interface MasterStudent {
   classLabel: string | null
   phone: string | null
   county: string | null
+  address: string | null
+  tuitionWaiver: boolean
+  photoUrl: string | null
+  /** Admitted class label, e.g. "Grade 4". */
+  classAdmitted: string | null
+  /** Attendance in the selected term; null when no term is selected. */
+  attendance: AttendanceSummary | null
   guardians: {
     linkId: string
     id: string
@@ -159,15 +171,23 @@ export async function getGuardiansWithStudents(search = ''): Promise<GuardianWit
   })
 }
 
-/** Full profile for the selected learner, including their guardians. */
-export async function getStudentProfile(studentId: string): Promise<MasterStudent | null> {
+/**
+ * Full profile for the selected learner, including their guardians and their
+ * attendance in the selected term.
+ */
+export async function getStudentProfile(
+  studentId: string,
+  sessionId: string | null = null,
+): Promise<MasterStudent | null> {
   await connection()
 
   const supabase = await createClient()
 
   const { data: student } = await supabase
     .from('students')
-    .select('id, student_no, first_name, other_names, surname, gender, date_of_birth, status, phone, county, current_stream_id, admitted_class_id')
+    .select(
+      'id, student_no, first_name, other_names, surname, gender, date_of_birth, status, phone, county, address, tuition_waiver, photo_url, current_stream_id, admitted_class_id',
+    )
     .eq('id', studentId)
     .is('deleted_at', null)
     .maybeSingle()
@@ -175,23 +195,25 @@ export async function getStudentProfile(studentId: string): Promise<MasterStuden
   if (!student) return null
 
   let streamLabel: string | null = null
+  let currentClass: string | null = null
   if (student.current_stream_id) {
     const { data: stream } = await supabase
       .from('streams')
-      .select('stream_label')
+      .select('stream_label, full_name')
       .eq('id', student.current_stream_id)
       .maybeSingle()
     streamLabel = stream?.stream_label ?? null
+    currentClass = stream?.full_name || stream?.stream_label || null
   }
 
-  let classLabel: string | null = null
+  let classAdmitted: string | null = null
   if (student.admitted_class_id) {
     const { data: cls } = await supabase
       .from('classes')
       .select('label')
       .eq('id', student.admitted_class_id)
       .maybeSingle()
-    classLabel = cls?.label ?? null
+    classAdmitted = cls?.label ?? null
   }
 
   const { data: links } = await supabase
@@ -200,10 +222,7 @@ export async function getStudentProfile(studentId: string): Promise<MasterStuden
     .eq('student_id', student.id)
 
   const guardianIds = (links ?? []).map((l) => l.guardian_id)
-  const guardianById = new Map<
-    string,
-    { id: string; full_name: string; phone: string }
-  >()
+  const guardianById = new Map<string, { id: string; full_name: string; phone: string }>()
 
   if (guardianIds.length > 0) {
     const { data: guardians } = await supabase
@@ -213,6 +232,17 @@ export async function getStudentProfile(studentId: string): Promise<MasterStuden
     for (const g of guardians ?? []) guardianById.set(g.id, g)
   }
 
+  let attendance: AttendanceSummary | null = null
+  if (sessionId) {
+    const { data: records } = await supabase
+      .from('attendance_records')
+      .select('date, status')
+      .eq('student_id', student.id)
+      .eq('session_id', sessionId)
+    attendance = summarizeAttendance(records ?? [])
+  }
+
+  // Null-safe join: other_names and surname are both nullable.
   const parts = [student.first_name, student.other_names, student.surname].filter(Boolean)
 
   return {
@@ -226,9 +256,14 @@ export async function getStudentProfile(studentId: string): Promise<MasterStuden
     dateOfBirth: student.date_of_birth,
     status: student.status,
     streamLabel,
-    classLabel: classLabel && streamLabel ? `${classLabel} ${streamLabel}` : classLabel,
+    classLabel: currentClass,
+    classAdmitted,
     phone: student.phone,
     county: student.county,
+    address: student.address,
+    tuitionWaiver: student.tuition_waiver,
+    photoUrl: student.photo_url,
+    attendance,
     guardians: (links ?? []).flatMap((link) => {
       const guardian = guardianById.get(link.guardian_id)
       if (!guardian) return []
@@ -255,20 +290,39 @@ export interface MasterStudentListItem {
   gender: string
   status: string
   streamLabel: string | null
+  /** Full stream name for the class chip, e.g. "Grade 4 East". */
+  classLabel: string | null
+  photoUrl: string | null
+  tuitionWaiver: boolean
+}
+
+export interface MasterStudentFilters {
+  status: StatusFilter
+  quick: QuickFilter[]
 }
 
 /** Learner list for the master-detail left pane. */
-export async function getMasterStudents(search = ''): Promise<MasterStudentListItem[]> {
+export async function getMasterStudents(
+  search = '',
+  filters: MasterStudentFilters = { status: 'active', quick: [] },
+): Promise<MasterStudentListItem[]> {
   await connection()
 
   const supabase = await createClient()
 
   let query = supabase
     .from('students')
-    .select('id, student_no, first_name, other_names, surname, gender, status, current_stream_id')
+    .select(
+      'id, student_no, first_name, other_names, surname, gender, status, current_stream_id, photo_url, tuition_waiver',
+    )
     .is('deleted_at', null)
     .order('first_name')
     .limit(200)
+
+  if (filters.status !== 'all') query = query.eq('status', filters.status)
+  if (filters.quick.includes('male')) query = query.eq('gender', 'male')
+  if (filters.quick.includes('female')) query = query.eq('gender', 'female')
+  if (filters.quick.includes('waiver')) query = query.eq('tuition_waiver', true)
 
   if (search.trim()) {
     const term = `%${search.trim()}%`
@@ -279,20 +333,31 @@ export async function getMasterStudents(search = ''): Promise<MasterStudentListI
   if (error) throw new Error(error.message)
 
   const streamIds = [...new Set((data ?? []).map((r) => r.current_stream_id).filter(Boolean))] as string[]
-  let streamById: Map<string, string> = new Map()
+  let streamById = new Map<string, { label: string; fullName: string }>()
   if (streamIds.length > 0) {
-    const { data: streams } = await supabase.from('streams').select('id, stream_label').in('id', streamIds)
-    streamById = new Map((streams ?? []).map((s) => [s.id, s.stream_label]))
+    const { data: streams } = await supabase
+      .from('streams')
+      .select('id, stream_label, full_name')
+      .in('id', streamIds)
+    streamById = new Map(
+      (streams ?? []).map((s) => [s.id, { label: s.stream_label, fullName: s.full_name }]),
+    )
   }
 
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    studentNo: row.student_no,
-    fullName: [row.first_name, row.other_names, row.surname].filter(Boolean).join(' '),
-    gender: row.gender,
-    status: row.status,
-    streamLabel: row.current_stream_id ? (streamById.get(row.current_stream_id) ?? null) : null,
-  }))
+  return (data ?? []).map((row) => {
+    const stream = row.current_stream_id ? streamById.get(row.current_stream_id) : undefined
+    return {
+      id: row.id,
+      studentNo: row.student_no,
+      fullName: [row.first_name, row.other_names, row.surname].filter(Boolean).join(' '),
+      gender: row.gender,
+      status: row.status,
+      streamLabel: stream?.label ?? null,
+      classLabel: stream ? stream.fullName || stream.label : null,
+      photoUrl: row.photo_url,
+      tuitionWaiver: row.tuition_waiver,
+    }
+  })
 }
 
 /**

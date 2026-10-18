@@ -1,8 +1,15 @@
 'use client'
 
-import { useActionState, useEffect, useState } from 'react'
+import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { addStudentGuardian } from '../actions'
 import { RecordField, RecordSelect } from '@/features/students/components/record-field'
 import type { GuardianActionResult } from '../actions'
@@ -38,12 +45,23 @@ export function AddGuardianDialog({
   studentId,
   studentName,
   hasFeePayer,
+  open: controlledOpen,
+  onOpenChange,
 }: {
   studentId: string
   studentName: string
   hasFeePayer: boolean
+  /** Pass to control the dialog from a menu; it then renders no trigger. */
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }) {
-  const [open, setOpen] = useState(false)
+  const [innerOpen, setInnerOpen] = useState(false)
+  const controlled = controlledOpen !== undefined
+  const open = controlled ? controlledOpen : innerOpen
+  const setOpen = (next: boolean) => {
+    if (!controlled) setInnerOpen(next)
+    onOpenChange?.(next)
+  }
   const [state, action] = useActionState<GuardianActionResult | null, FormData>(
     addStudentGuardian,
     null,
@@ -58,40 +76,22 @@ export function AddGuardianDialog({
     if (state?.ok) setOpen(false)
   }
 
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [open])
-
   return (
     <>
-      <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-        Add guardian
-      </Button>
+      {!controlled && (
+        <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+          Add guardian
+        </Button>
+      )}
 
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setOpen(false)
-          }}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={`Add a guardian to ${studentName}`}
-            className="w-full max-w-2xl space-y-4 rounded-lg border border-border bg-background p-4"
-          >
-            <div>
-              <h3 className="text-base font-semibold">Add guardian to {studentName}</h3>
-              <p className="text-sm text-muted-foreground">
-                Creates the guardian and links them to this learner in one step.
-              </p>
-            </div>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add guardian to {studentName}</DialogTitle>
+            <DialogDescription>
+              Creates the guardian and links them to this learner in one step.
+            </DialogDescription>
+          </DialogHeader>
 
             <form action={action} className="space-y-4">
               <input type="hidden" name="studentId" value={studentId} />
@@ -157,9 +157,8 @@ export function AddGuardianDialog({
                 </Button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

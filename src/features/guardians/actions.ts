@@ -4,7 +4,13 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { requirePermission } from '@/lib/auth/guards'
 import { resolveStudentNo } from './queries'
-import { createGuardianSchema, linkStudentSchema, unlinkStudentSchema, addStudentGuardianSchema } from './schema'
+import {
+  createGuardianSchema,
+  linkStudentSchema,
+  unlinkStudentSchema,
+  addStudentGuardianSchema,
+  updateGuardianSchema,
+} from './schema'
 
 /**
  * Resolve an admission number to a learner name, for the Link Student dialog.
@@ -235,4 +241,54 @@ export async function addStudentGuardian(
 
   revalidatePath(`/students/${d.studentId}`, 'page')
   return { ok: true, guardianId: guardianId as string }
+}
+
+/**
+ * Edit a guardian's name, phone and address.
+ *
+ * Tenant isolation is RLS's job: a guardian from another school is simply not
+ * visible to the update, so zero rows come back and the caller sees "not found"
+ * rather than a hint that the id exists elsewhere.
+ */
+export async function updateGuardian(
+  _prev: GuardianActionResult | null,
+  formData: FormData,
+): Promise<GuardianActionResult> {
+  await requirePermission('guardian.manage')
+
+  const parsed = updateGuardianSchema.safeParse({
+    guardianId: formData.get('guardianId'),
+    fullName: formData.get('fullName'),
+    phone: formData.get('phone'),
+    address: formData.get('address') ?? '',
+  })
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: 'Please correct the highlighted fields.',
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    }
+  }
+
+  const data = parsed.data
+  const supabase = await createClient()
+
+  const { data: updated, error } = await supabase
+    .from('guardians')
+    .update({
+      full_name: data.fullName,
+      phone: data.phone,
+      address: data.address || null,
+    })
+    .eq('id', data.guardianId)
+    .is('deleted_at', null)
+    .select('id')
+    .maybeSingle()
+
+  if (error) return { ok: false, error: error.message }
+  if (!updated) return { ok: false, error: 'Guardian not found.' }
+
+  revalidatePath('/', 'layout')
+  return { ok: true, guardianId: updated.id }
 }

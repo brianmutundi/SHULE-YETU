@@ -56,3 +56,13 @@ export const addStudentGuardianSchema = createGuardianSchema.extend({
 })
 
 export type AddStudentGuardianInput = z.input<typeof addStudentGuardianSchema>
+
+/** Edit the fields the guardians table shows. Links are changed separately. */
+export const updateGuardianSchema = z.object({
+  guardianId: z.string().uuid(),
+  fullName: z.string().trim().min(1, 'Enter the guardian name').max(160),
+  phone: kenyanPhone,
+  address: z.string().trim().max(200).optional().or(z.literal('')),
+})
+
+export type UpdateGuardianInput = z.input<typeof updateGuardianSchema>
