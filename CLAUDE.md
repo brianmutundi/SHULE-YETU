@@ -1,4 +1,4 @@
-# CLAUDE.md: School Management System (v3 — Kenya CBC)
+﻿# CLAUDE.md: School Management System (v3 â€” Kenya CBC)
 
 Read this file fully before writing code. It defines the product, architecture, every component, the rules, and the build order. If a request conflicts with this file, say so before proceeding.
 
@@ -43,7 +43,7 @@ Two operating modes fall out of the school type and change most of the product. 
 | Charts | Recharts (bar, donut, area) |
 | Theming | next-themes (light/dark, class strategy) |
 | i18n | next-intl. English is the source locale; Kiswahili scaffolding only |
-| Excel | SheetJS — **blocked, see section 13 `[A16]`** |
+| Excel | SheetJS â€” **blocked, see section 13 `[A16]`** |
 | PDF | `@react-pdf/renderer` |
 | Dates | date-fns, `Africa/Nairobi` |
 | Testing | Vitest, Playwright, SQL/pgTAP tests for RLS |
@@ -57,65 +57,67 @@ Two operating modes fall out of the school type and change most of the product. 
 
 ```
 /
-├─ CLAUDE.md
-├─ supabase/
-│  ├─ migrations/            # timestamped SQL; never edit applied files
-│  ├─ seed.sql               # two demo tenants, one per operating mode
-│  └─ tests/                 # pgTAP: RLS and function tests
-├─ src/
-│  ├─ app/
-│  │  ├─ (auth)/login/
-│  │  ├─ (onboarding)/       # tenant registration, school-type selection
-│  │  ├─ (app)/
-│  │  │  ├─ layout.tsx       # pill nav, session badge, theme toggle, logout
-│  │  │  ├─ home/            # dashboard
-│  │  │  ├─ students/
-│  │  │  │  ├─ page.tsx             # master-detail (students | guardians)
-│  │  │  │  ├─ directory/page.tsx   # full table view
-│  │  │  │  ├─ new/page.tsx         # 6-step wizard (mode-aware)
-│  │  │  │  ├─ intake/page.tsx      # senior only: placement of Grade 10 learners
-│  │  │  │  ├─ import/page.tsx
-│  │  │  │  └─ [id]/page.tsx        # Full Student Record
-│  │  │  ├─ staff/
-│  │  │  ├─ attendance/
-│  │  │  ├─ assessments/       # marks entry, report cards, checkpoints
-│  │  │  ├─ fees/              # payments, invoices, debtors, structures, mpesa
-│  │  │  ├─ boarding/          # senior only: houses, dorms, roll-call, exeat
-│  │  │  ├─ classes/
-│  │  │  ├─ transitions/       # sessions, academic-years, promotions
-│  │  │  └─ settings/          # school profile (school type shown read-only)
-│  │  └─ api/
-│  │     ├─ students/export/route.ts
-│  │     ├─ students/[id]/dossier/route.ts
-│  │     ├─ import/template/route.ts
-│  │     ├─ payments/mpesa/callback/route.ts   # Daraja validation + confirmation
-│  │     ├─ government/enrolment/route.ts      # NEMIS/KEMIS return
-│  │     └─ messaging/webhook/route.ts         # Africa's Talking delivery report
-│  ├─ features/
-│  │  ├─ dashboard/ students/ enrollment/ intake/ import/ guardians/
-│  │  ├─ classes/ transitions/ attendance/ staff/ fees/ assessments/ boarding/
-│  │  ├─ documents/ messaging/ reports/
-│  │  └─ (each: components, actions.ts, queries.ts, schema.ts, types.ts)
-│  ├─ components/ui/         # shadcn primitives only
-│  ├─ components/shared/     # DataTable, StatCard, StatusBadge, Chip, Stepper,
-│  │                         # MasterDetail, ChartCard, Drawer, EmptyState
-│  ├─ lib/
-│  │  ├─ supabase/ (server.ts, client.ts, middleware.ts, types.ts)
-│  │  ├─ auth/ (session.ts, permissions.ts)
-│  │  ├─ school-type.ts      # §4A — single source of truth for operating mode
-│  │  ├─ ids.ts              # student ID generation
-│  │  ├─ money.ts            # integer minor units, KES formatting
-│  │  ├─ phone.ts            # +254 validation and E.164 normalization
-│  │  ├─ payments/ (mpesa.ts, methods.ts)      # Daraja provider adapter
-│  │  ├─ messaging/ (provider.ts, templates.ts)
-│  │  ├─ import/ (parse.ts, validate.ts, template.ts)
-│  │  └─ utils.ts
-│  ├─ middleware.ts
-│  └─ i18n/ (routing.ts, request.ts, messages/en.json, messages/sw.json)
-└─ tests/ (unit, e2e)
+â”œâ”€ CLAUDE.md
+â”œâ”€ supabase/
+â”‚  â”œâ”€ migrations/            # timestamped SQL; never edit applied files
+â”‚  â”œâ”€ seed.sql               # two demo tenants, one per operating mode
+â”‚  â””â”€ tests/                 # pgTAP: RLS and function tests
+â”œâ”€ src/
+â”‚  â”œâ”€ app/
+â”‚  â”‚  â”œâ”€ (auth)/login/
+â”‚  â”‚  â”œâ”€ (onboarding)/       # tenant registration, school-type selection
+â”‚  â”‚  â”œâ”€ (app)/
+â”‚  â”‚  â”‚  â”œâ”€ layout.tsx       # pill nav, session badge, theme toggle, logout
+â”‚  â”‚  â”‚  â”œâ”€ home/            # dashboard
+â”‚  â”‚  â”‚  â”œâ”€ students/
+â”‚  â”‚  â”‚  â”‚  â”œâ”€ page.tsx             # master-detail (students | guardians)
+â”‚  â”‚  â”‚  â”‚  â”œâ”€ directory/page.tsx   # full table view
+â”‚  â”‚  â”‚  â”‚  â”œâ”€ new/page.tsx         # 6-step wizard (mode-aware)
+â”‚  â”‚  â”‚  â”‚  â”œâ”€ intake/page.tsx      # senior only: placement of Grade 10 learners
+â”‚  â”‚  â”‚  â”‚  â”œâ”€ import/page.tsx
+â”‚  â”‚  â”‚  â”‚  â””â”€ [id]/page.tsx        # Full Student Record
+â”‚  â”‚  â”‚  â”œâ”€ staff/
+â”‚  â”‚  â”‚  â”œâ”€ attendance/
+â”‚  â”‚  â”‚  â”œâ”€ assessments/       # marks entry, report cards, checkpoints
+â”‚  â”‚  â”‚  â”œâ”€ fees/              # payments, invoices, debtors, structures, mpesa
+â”‚  â”‚  â”‚  â”œâ”€ boarding/          # senior only: houses, dorms, roll-call, exeat
+â”‚  â”‚  â”‚  â”œâ”€ classes/
+â”‚  â”‚  â”‚  â”œâ”€ transitions/       # sessions, academic-years, promotions
+â”‚  â”‚  â”‚  â””â”€ settings/          # school profile (school type shown read-only)
+â”‚  â”‚  â””â”€ api/
+â”‚  â”‚     â”œâ”€ students/export/route.ts
+â”‚  â”‚     â”œâ”€ students/[id]/dossier/route.ts
+â”‚  â”‚     â”œâ”€ import/template/route.ts
+â”‚  â”‚     â”œâ”€ payments/mpesa/callback/route.ts   # Daraja validation + confirmation
+â”‚  â”‚     â”œâ”€ government/enrolment/route.ts      # NEMIS/KEMIS return
+â”‚  â”‚     â””â”€ messaging/webhook/route.ts         # Africa's Talking delivery report
+â”‚  â”œâ”€ features/
+â”‚  â”‚  â”œâ”€ dashboard/ students/ enrollment/ intake/ import/ guardians/
+â”‚  â”‚  â”œâ”€ classes/ transitions/ attendance/ staff/ fees/ assessments/ boarding/
+â”‚  â”‚  â”œâ”€ documents/ messaging/ reports/
+â”‚  â”‚  â””â”€ (each: components, actions.ts, queries.ts, schema.ts, types.ts)
+â”‚  â”œâ”€ components/ui/         # shadcn primitives only
+â”‚  â”œâ”€ components/shared/     # DataTable, StatCard, StatusBadge, Chip, Stepper,
+â”‚  â”‚                         # MasterDetail, ChartCard, Drawer, EmptyState
+â”‚  â”œâ”€ lib/
+â”‚  â”‚  â”œâ”€ supabase/ (server.ts, client.ts, admin.ts, types.ts)
+â”‚  â”‚  â”œâ”€ auth/ (session.ts, permissions.ts)
+â”‚  â”‚  â”œâ”€ school-type.ts      # Â§4A â€” single source of truth for operating mode
+â”‚  â”‚  â”œâ”€ ids.ts              # student ID generation
+â”‚  â”‚  â”œâ”€ money.ts            # integer minor units, KES formatting
+â”‚  â”‚  â”œâ”€ phone.ts            # +254 validation and E.164 normalization
+â”‚  â”‚  â”œâ”€ payments/ (mpesa.ts, methods.ts)      # Daraja provider adapter
+â”‚  â”‚  â”œâ”€ messaging/ (provider.ts, templates.ts)
+â”‚  â”‚  â”œâ”€ import/ (parse.ts, validate.ts, template.ts)
+â”‚  â”‚  â””â”€ utils.ts
+â”‚  â”œâ”€ proxy.ts            # Next 16: session refresh + unauthenticated redirect
+â”‚  â””â”€ i18n/ (routing.ts, request.ts, messages/en.json, messages/sw.json)
+â””â”€ tests/ (unit, e2e)
 ```
 
 Rule: **feature code lives in `src/features/<name>`**. Pages stay thin and only compose feature components.
+
+> **Next.js 16 notes.** The `middleware.ts` convention is deprecated and renamed `proxy.ts`, with the exported function named `proxy`; it runs on the Node.js runtime and does not support edge. Synchronous access to `cookies()`, `headers()`, `params` and `searchParams` is removed â€” all must be awaited. The proxy refreshes the session and redirects unauthenticated users; it is **not** an authorization layer, and every Server Action must authorize independently.
 
 ---
 
@@ -194,10 +196,10 @@ snake_case, `uuid` primary keys (`gen_random_uuid()`), `created_at`/`updated_at`
 - `streams` (id, tenant_id, class_id, academic_year_id, stream_label, full_name)
 
 **Pathways and subjects (senior only)**
-- `pathways` (id, tenant_id, code, name) — STEM, Social Sciences, Arts and Sports `[A5]`
+- `pathways` (id, tenant_id, code, name) â€” STEM, Social Sciences, Arts and Sports `[A5]`
 - `subjects` (id, tenant_id, code, name, is_core bool)
 - `pathway_subjects` (id, tenant_id, pathway_id, subject_id, **requirement** `compulsory|optional|elective`)
-- `student_subjects` (student_id, subject_id, **selection_cutoff_at**, chosen_by) — the learner's own combination
+- `student_subjects` (student_id, subject_id, **selection_cutoff_at**, chosen_by) â€” the learner's own combination
 
 **Students and families**
 - `students` (id, tenant_id, student_no unique per tenant, **upi** nullable unique per tenant, **assessment_number** nullable, **birth_cert_no**, first_name, other_names, surname, gender, date_of_birth, **county**, **sub_county**, nationality, religion, address, phone, email, photo_url, status `draft|active|inactive|completed|graduated|transferred|withdrawn`, tuition_waiver bool, **house**, **special_needs_category**, **special_needs_notes**, **orphan_status**, **pathway_id** nullable, **track** nullable, **destination_school**, admitted_on, admitted_session_id, admitted_class_id, current_stream_id, **previous_school**, transfer_reason, deleted_at)
@@ -229,17 +231,17 @@ snake_case, `uuid` primary keys (`gen_random_uuid()`), `created_at`/`updated_at`
 - `sub_strands` (id, tenant_id, strand_id, name)
 - `performance_levels` (id, tenant_id, **scale** `eight_point|four_point`, code `EE1..BE2`, points numeric, descriptor, sort_order)
 - `assessment_tasks` (id, tenant_id, name, **category** `formative|summative|continuous|end_of_term|culminating`, weight, session_id, learning_area_id nullable, subject_id nullable)
-- `marks` (id, tenant_id, student_id, assessment_task_id, stream_id, **performance_level_code** nullable, **score** numeric nullable, graded_by, graded_at) — exactly one of level/score is set
+- `marks` (id, tenant_id, student_id, assessment_task_id, stream_id, **performance_level_code** nullable, **score** numeric nullable, graded_by, graded_at) â€” exactly one of level/score is set
 - `checkpoint_results` (basic mode) (id, tenant_id, student_id, **checkpoint** `KPSEA|KJSEA`, academic_year_id, status `pending|recorded|released`)
 - `report_cards` (id, tenant_id, student_id, session_id, issued_at, pdf_path)
 
-**Fees and payments** — money stored as **integer minor units** (KES cents); never floats
+**Fees and payments** â€” money stored as **integer minor units** (KES cents); never floats
 - `fee_items` (id, tenant_id, name, amount, **vote_head** `tuition|boarding|activity|lunch|transport|uniform|exams|pta`, applies_to_class_id nullable, **boarding_only** bool, session_id)
-- `fee_structures` — template per tenant, **school_type-scoped** `[A15]`
+- `fee_structures` â€” template per tenant, **school_type-scoped** `[A15]`
 - `invoices` (id, tenant_id, student_id, session_id, total, **credit_applied**, status `open|partial|paid|void`)
 - `invoice_lines` (invoice_id, fee_item_id, amount, waived bool)
 - `payments` (id, tenant_id, student_id, invoice_id, amount, **method** `mpesa|cash|bank|cheque|bursary|sponsor`, reference, paid_at, recorded_by)
-- `payment_reversals` (id, payment_id, amount, reason, reversed_by, reversed_at) — payments are **immutable**; corrections are reversals, never edits or deletes
+- `payment_reversals` (id, payment_id, amount, reason, reversed_by, reversed_at) â€” payments are **immutable**; corrections are reversals, never edits or deletes
 - `mpesa_transactions` (id, tenant_id, **trans_id** unique for idempotency, **transaction_type** `stk_push|c2b`, phone, amount, account_number, **checkout_request_id**, result_code, raw_payload jsonb, matched_student_id nullable, matched_invoice_id nullable, **status** `pending|matched|unallocated|failed`, received_at)
 - `bursaries` (id, tenant_id, name, sponsor_organization, amount, academic_year_id)
 - `instalment_plans` (id, tenant_id, student_id, session_id, instalments jsonb)
@@ -260,7 +262,7 @@ snake_case, `uuid` primary keys (`gen_random_uuid()`), `created_at`/`updated_at`
 
 ## 6. Global Context: Session and Theme
 
-- The **session badge** (e.g. `Term 2 · 2026`) is the app-wide context. Changing the term or academic year anywhere re-queries every widget. Store it in a cookie/URL param so server components can read it.
+- The **session badge** (e.g. `Term 2 Â· 2026`) is the app-wide context. Changing the term or academic year anywhere re-queries every widget. Store it in a cookie/URL param so server components can read it.
 - **Three terms per academic year.** Each term carries opening date, midterm break date and closing date. The academic year label is a single calendar year, e.g. `2026`.
 - Light and dark themes via `next-themes`. Every component must look correct in both.
 
@@ -304,7 +306,7 @@ Every screen below is **mode-aware**. What a `basic` tenant sees and what a `sen
 - **Send Email / SMS modal** with channel toggle, recipients from guardians, count, subject, message, sending state, result toast.
 - **Alumni:** graduated students are viewed in a separate Alumni list (`status = graduated`), reachable from the sidebar. Basic-mode `completed` learners appear under a **"Completed this level"** list instead.
 
-### 7.5 Enrollment Wizard (`/students/new`) — mode-aware
+### 7.5 Enrollment Wizard (`/students/new`) â€” mode-aware
 1. **Basic Info:** photo, names, gender, DOB, **nationality, county, sub-county**, auto Student ID, **UPI**, **birth cert no**, address, phone, email.
 2. **Admission (basic mode):** admission date, academic year, class, stream, previous school, transfer reason.
    **Placement (senior mode), same step, different fields:** **previous school, KNEC assessment number, pathway, track, subject combination.** The "Add new class" shortcut stays available.
@@ -350,10 +352,10 @@ Tabs: **Sessions, Academic Years, Promotions.**
 
 | Mode | Chain | Terminal |
 |---|---|---|
-| basic | PP1 → PP2 → G1…G6 → (G7…G9 if the tenant covers them) | `completed`, unless the tenant's last class is a real exit |
-| senior | G10 → G11 → G12 | `graduated` |
+| basic | PP1 â†’ PP2 â†’ G1â€¦G6 â†’ (G7â€¦G9 if the tenant covers them) | `completed`, unless the tenant's last class is a real exit |
+| senior | G10 â†’ G11 â†’ G12 | `graduated` |
 
-- **Basic-mode exit checkpoints:** students at Grade 6 (KPSEA) and Grade 9 (KJSEA) are **held** — not promoted — until their exit results are recorded.
+- **Basic-mode exit checkpoints:** students at Grade 6 (KPSEA) and Grade 9 (KJSEA) are **held** â€” not promoted â€” until their exit results are recorded.
 - **Failure is atomic:** "Promotion aborted: N of N student(s) could not be promoted. No changes were made."
 - Keep the dry-run summary, the idempotent single-transaction engine, `promotion_runs`, per-student audit entries and rollback exactly as designed.
 - "Keep students in their current streams" behaviour is unconfirmed `[A11]`.
@@ -397,7 +399,7 @@ House roster with capacity, dormitory allocation, bed allocation per academic ye
 
 Real module, not a stub. Own phase in the build order.
 
-- **Basic mode:** CBC learning areas → strands → sub-strands. Formative and summative assessments. Performance recorded on the **8-point scale (EE1…BE2)** with points and descriptors, or the **4-level** version. SBA toward **KPSEA (Grade 6)** and **KJSEA (Grade 9)**. Core competencies and values comments.
+- **Basic mode:** CBC learning areas â†’ strands â†’ sub-strands. Formative and summative assessments. Performance recorded on the **8-point scale (EE1â€¦BE2)** with points and descriptors, or the **4-level** version. SBA toward **KPSEA (Grade 6)** and **KJSEA (Grade 9)**. Core competencies and values comments.
 - **Senior mode:** subject-based. Continuous assessment plus end-of-term exams per subject, plus the **Senior School culminating assessment** at the end of Grade 12. Weights and rules are configurable and unconfirmed `[A3]`.
 - **Marks entry grid** per stream and learning area/subject, **assigned teachers only**, keyboard navigation, batched save, offline-capable.
 - **Report cards (PDF)** per term: school header, results, comments, attendance summary, fee balance note, next term opening date, class teacher and head teacher signature lines. **Bulk "print all for stream".**
@@ -492,7 +494,7 @@ supabase gen types typescript --local > src/lib/supabase/types.ts
 
 ---
 
-## 13. Known Gaps and Assumptions (unconfirmed — confirm before building)
+## 13. Known Gaps and Assumptions (unconfirmed â€” confirm before building)
 
 **School type and structure**
 - `[A1]` Whether `senior` may ever combine with any other type. Currently modelled as never.
