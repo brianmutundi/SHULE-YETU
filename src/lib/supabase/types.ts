@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -187,6 +187,137 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_batch_rows: {
+        Row: {
+          batch_id: string
+          created_at: string
+          errors: Json
+          id: string
+          payload: Json
+          row_number: number
+          status: string
+          student_id: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          batch_id: string
+          created_at?: string
+          errors?: Json
+          id?: string
+          payload: Json
+          row_number: number
+          status?: string
+          student_id?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          batch_id?: string
+          created_at?: string
+          errors?: Json
+          id?: string
+          payload?: Json
+          row_number?: number
+          status?: string
+          student_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_batch_rows_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "import_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_batch_rows_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_batch_rows_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_batches: {
+        Row: {
+          academic_year_id: string
+          completed_at: string | null
+          created_at: string
+          failed_rows: number
+          file_name: string
+          id: string
+          imported_rows: number
+          operating_mode: Database["public"]["Enums"]["operating_mode"]
+          status: string
+          tenant_id: string
+          total_rows: number
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          academic_year_id: string
+          completed_at?: string | null
+          created_at?: string
+          failed_rows?: number
+          file_name: string
+          id?: string
+          imported_rows?: number
+          operating_mode: Database["public"]["Enums"]["operating_mode"]
+          status?: string
+          tenant_id: string
+          total_rows?: number
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          academic_year_id?: string
+          completed_at?: string | null
+          created_at?: string
+          failed_rows?: number
+          file_name?: string
+          id?: string
+          imported_rows?: number
+          operating_mode?: Database["public"]["Enums"]["operating_mode"]
+          status?: string
+          tenant_id?: string
+          total_rows?: number
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_batches_academic_year_id_fkey"
+            columns: ["academic_year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_batches_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_batches_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -437,45 +568,6 @@ export type Database = {
           },
           {
             foreignKeyName: "streams_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      student_academic_profile: {
-        Row: {
-          previous_school: string | null
-          student_id: string
-          tenant_id: string
-          transfer_reason: string | null
-          updated_at: string
-        }
-        Insert: {
-          previous_school?: string | null
-          student_id: string
-          tenant_id: string
-          transfer_reason?: string | null
-          updated_at?: string
-        }
-        Update: {
-          previous_school?: string | null
-          student_id?: string
-          tenant_id?: string
-          transfer_reason?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "student_academic_profile_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: true
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_academic_profile_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -1069,6 +1161,7 @@ export type Database = {
         Args: { p_labels?: string[]; p_tenant: string; p_year: string }
         Returns: number
       }
+      import_students: { Args: { p_batch: string }; Returns: Json }
       next_student_no: { Args: { p_tenant: string }; Returns: string }
       student_directory_stats: { Args: never; Returns: Json }
     }

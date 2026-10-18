@@ -45,7 +45,7 @@ Two operating modes fall out of the school type and change most of the product. 
 | Charts | Recharts (bar, donut, area) |
 | Theming | next-themes (light/dark, class strategy) |
 | i18n | next-intl. English is the source locale; Kiswahili scaffolding only |
-| Excel | SheetJS - **blocked, see section 13 `[A16]`** |
+| Excel | exceljs (see `[A16]`) |
 | PDF | `@react-pdf/renderer` |
 | Dates | date-fns, `Africa/Nairobi` |
 | Testing | Vitest, Playwright, SQL/pgTAP tests for RLS |
@@ -488,7 +488,7 @@ A feature is done only when:
 4. **Master-detail screen**, quick registration modal, **guardians view and Link Student**.
 5. **Enrollment wizard** with draft autosave and atomic submit. **Senior intake/placement flow.** (DONE. Draft autosave and the separate senior intake screen are NOT built; the wizard's senior step 2 covers placement inline. Documents are collected in Phase 6.)
 6. **Full Student Record** tabs, medical, logistics, documents, consents. (DONE. `/students/[id]` with Bio and admission, Family and contact, Academic, Medical, Logistics and finance, Docs and compliance. Finance, results and document upload show explicit "not available yet" states pointing at their phases. `student_academic_profile` was dropped as a duplicate of `students.previous_school`.)
-7. **Bulk import.** (IN PROGRESS, being built in parallel - not reviewed by the phases 5-6 work.)
+7. **Bulk import.** (DONE. Two-step flow: stage then confirm. The template writer, parser and validator are `lib/import/`. Rows are staged in `import_batch_rows` and the confirm step sends only a batch id, so the rows written are the rows the server validated rather than whatever the browser held. `app.import_students()` writes row by row inside an exception block per row, so a bad row never blocks a good one, and duplicates are re-checked at write time. Guardians are reused on name + phone so siblings share one record.) (IN PROGRESS, being built in parallel - not reviewed by the phases 5-6 work.)
 8. **Transitions:** sessions, years, promotion engine with dry-run, rollback and **mode-aware chains plus exit-checkpoint holds**.
 9. **Attendance** and **Staff.**
 10. **Assessments:** learning areas and strands, subjects and pathways, rubric, marks entry, SBA, checkpoints, report cards, transcript.
@@ -544,7 +544,7 @@ pnpm exec supabase gen types typescript --linked > src/lib/supabase/types.ts
 - `[A12]` Enrollment wizard step ordering and autosave granularity.
 
 **Tooling**
-- `[A16]` **SheetJS `xlsx` is blocked.** The npm package has two unpatched HIGH advisories (prototype pollution, ReDoS) with no fixed version published to npm. Bulk import parses uploaded spreadsheets containing student PII, so this must be resolved before Phase 7. Candidates: `exceljs`, SheetJS from their own CDN, or a maintained mirror.
+- `[A16]` **RESOLVED: use `exceljs`, not SheetJS.** SheetJS `xlsx` on npm had two unpatched HIGH advisories (prototype pollution, ReDoS) with no fixed version published, so it was removed. Bulk import parses spreadsheets containing student PII and now uses `exceljs` plus a hand-written RFC 4180 CSV reader in `lib/import/csv.ts`. `lib/import/columns.ts` is the single column contract read by the template writer, the parser and the Zod validator, so those three cannot drift.
 - `[A7]` Attendance thresholds for the "Good Attendance" badge and the colours of the rate bar.
 - `[A5]` Staff module screens beyond the directory.
 - `[A15]` Whether fee templates must differ per school type within a single deployment.
