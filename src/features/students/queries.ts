@@ -1,6 +1,8 @@
 import { getSessionContext } from '@/lib/auth/session'
 import { connection } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getAcademicPeriod } from '@/lib/auth/period'
+import { todayInNairobi } from '@/lib/dates'
 import type { Database } from '@/lib/supabase/types'
 
 type StudentStatus = Database['public']['Enums']['student_status']
@@ -195,5 +197,28 @@ export async function getFilterOptions(academicYearId: string): Promise<FilterOp
       label: s.stream_label,
       classId: s.class_id,
     })),
+  }
+}
+
+export interface RegistrationOptions extends FilterOptions {
+  terms: { id: string; name: string }[]
+  /** The selected term, preselected in the form. */
+  defaultTermId: string | null
+  /** yyyy-MM-dd in Africa/Nairobi, the default admission date. */
+  today: string
+}
+
+/** Everything the registration modal needs, resolved on the server. */
+export async function getRegistrationOptions(): Promise<RegistrationOptions> {
+  const { period, terms } = await getAcademicPeriod()
+  const filters = period
+    ? await getFilterOptions(period.academicYearId)
+    : { classes: [], streams: [] }
+
+  return {
+    ...filters,
+    terms: terms.map((t) => ({ id: t.id, name: t.name })),
+    defaultTermId: period?.sessionId ?? null,
+    today: todayInNairobi(),
   }
 }

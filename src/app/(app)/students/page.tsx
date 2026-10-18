@@ -1,6 +1,8 @@
 import { getSessionContext } from '@/lib/auth/session'
 import { can } from '@/lib/auth/permissions'
 import { getAcademicPeriod } from '@/lib/auth/period'
+import { getRegistrationOptions } from '@/features/students/queries'
+import { QuickCreateStudent } from '@/features/students/components/quick-create-student'
 import {
   getGuardiansWithStudents,
   getMasterStudents,
@@ -29,23 +31,29 @@ export default async function StudentsPage({
   const { period } = await getAcademicPeriod()
   const sessionId = period?.sessionId ?? null
 
-  const [students, guardians, profile] = await Promise.all([
+  const canEnrol = can(session.role, 'student.enrol')
+
+  const [students, guardians, profile, registrationOptions] = await Promise.all([
     getMasterStudents(search, { status, quick }),
     // Only search guardians when the guardians pane is open; otherwise the
     // query would run against a filter the user cannot see.
     getGuardiansWithStudents(pane === 'guardians' ? search : ''),
     pane === 'students' && selectedId ? getStudentProfile(selectedId, sessionId) : Promise.resolve(null),
+    canEnrol ? getRegistrationOptions() : Promise.resolve(null),
   ])
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Students</h1>
-        <p className="text-muted-foreground">
-          {pane === 'students'
-            ? 'Select a learner to see their record and guardians.'
-            : 'Select a guardian to see their details and linked learners.'}
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Students</h1>
+          <p className="text-muted-foreground">
+            {pane === 'students'
+              ? 'Select a learner to see their record and guardians.'
+              : 'Select a guardian to see their details and linked learners.'}
+          </p>
+        </div>
+        {registrationOptions && <QuickCreateStudent options={registrationOptions} />}
       </div>
 
       <MasterDetail

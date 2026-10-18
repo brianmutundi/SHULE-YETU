@@ -1,6 +1,7 @@
 import 'server-only'
 import { connection } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { signPhotoUrls } from '@/lib/storage/photos'
 import {
   summarizeAttendance,
   type AttendanceSummary,
@@ -232,6 +233,8 @@ export async function getStudentProfile(
     for (const g of guardians ?? []) guardianById.set(g.id, g)
   }
 
+  const photoUrls = await signPhotoUrls(supabase, [student.photo_url])
+
   let attendance: AttendanceSummary | null = null
   if (sessionId) {
     const { data: records } = await supabase
@@ -262,7 +265,7 @@ export async function getStudentProfile(
     county: student.county,
     address: student.address,
     tuitionWaiver: student.tuition_waiver,
-    photoUrl: student.photo_url,
+    photoUrl: student.photo_url ? (photoUrls.get(student.photo_url) ?? null) : null,
     attendance,
     guardians: (links ?? []).flatMap((link) => {
       const guardian = guardianById.get(link.guardian_id)
@@ -344,6 +347,11 @@ export async function getMasterStudents(
     )
   }
 
+  const photoUrls = await signPhotoUrls(
+    supabase,
+    (data ?? []).map((r) => r.photo_url),
+  )
+
   return (data ?? []).map((row) => {
     const stream = row.current_stream_id ? streamById.get(row.current_stream_id) : undefined
     return {
@@ -354,7 +362,7 @@ export async function getMasterStudents(
       status: row.status,
       streamLabel: stream?.label ?? null,
       classLabel: stream ? stream.fullName || stream.label : null,
-      photoUrl: row.photo_url,
+      photoUrl: row.photo_url ? (photoUrls.get(row.photo_url) ?? null) : null,
       tuitionWaiver: row.tuition_waiver,
     }
   })

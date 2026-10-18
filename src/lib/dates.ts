@@ -12,3 +12,9 @@ export function formatDate(value: string | null | undefined, fallback = 'Not rec
   const parsed = parseISO(value)
   return isValid(parsed) ? format(parsed, 'd MMM yyyy') : fallback
 }
+
+/** Today as yyyy-MM-dd in the school's time zone (CLAUDE.md: Africa/Nairobi). */
+export function todayInNairobi(now: Date = new Date()): string {
+  // The en-CA locale prints ISO order (yyyy-MM-dd).
+  return now.toLocaleDateString('en-CA', { timeZone: 'Africa/Nairobi' })
+}

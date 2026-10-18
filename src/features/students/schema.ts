@@ -40,6 +40,20 @@ export const quickCreateStudentSchema = z.object({
   upi: z.string().trim().max(24).optional().or(z.literal('')),
   county: z.string().trim().max(80).optional().or(z.literal('')),
   subCounty: z.string().trim().max(80).optional().or(z.literal('')),
+  nationality: z.string().trim().max(80).optional().or(z.literal('')),
+  religion: z.string().trim().max(80).optional().or(z.literal('')),
+  address: z.string().trim().max(200).optional().or(z.literal('')),
+  tuitionWaiver: z.boolean().default(false),
+  /** yyyy-MM-dd; blank means today. */
+  admittedOn: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Enter the admission date')
+    .optional()
+    .or(z.literal('')),
+  /** The term the learner is admitted in. */
+  sessionId: z.string().uuid().optional().or(z.literal('')),
+  /** Separate from enrolment consent (CLAUDE.md section 4B). Needed with a photo. */
+  mediaConsent: z.boolean().default(false),
 })
 
 export type QuickCreateInput = z.input<typeof quickCreateStudentSchema>

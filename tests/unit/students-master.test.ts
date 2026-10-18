@@ -8,7 +8,10 @@ import {
   toggleQuickFilter,
 } from '@/features/students/master-filters'
 import { summarizeAttendance } from '@/features/students/attendance-summary'
-import { formatDate } from '@/lib/dates'
+import { formatDate, todayInNairobi } from '@/lib/dates'
+import { fullNameOf } from '@/features/students/name'
+import { buildPhotoPath, MAX_PHOTO_BYTES, photoExtension, validatePhoto } from '@/features/students/photo'
+import { quickCreateStudentSchema } from '@/features/students/schema'
 
 describe('status filter', () => {
   it('defaults to active and ignores unknown values', () => {
@@ -91,5 +94,52 @@ describe('formatDate', () => {
   it('returns the fallback for null and garbage instead of throwing', () => {
     expect(formatDate(null)).toBe('Not recorded')
     expect(formatDate('not a date', '-')).toBe('-')
+  })
+})
+
+describe('registration', () => {
+  it('joins names without printing null or stray spaces', () => {
+    expect(fullNameOf('Amina', null, null)).toBe('Amina')
+    expect(fullNameOf('Amina', undefined, 'Otieno')).toBe('Amina Otieno')
+    expect(fullNameOf('Amina', '  ', 'Otieno')).toBe('Amina Otieno')
+    expect(fullNameOf('Amina', 'Wanjiru', 'Otieno')).toBe('Amina Wanjiru Otieno')
+  })
+
+  it('accepts only small JPEG, PNG or WebP photos', () => {
+    expect(validatePhoto({ type: 'image/png', size: 1000 })).toBeNull()
+    expect(validatePhoto({ type: 'image/gif', size: 1000 })).toMatch(/JPEG, PNG or WebP/)
+    expect(validatePhoto({ type: 'image/jpeg', size: 0 })).toMatch(/empty/)
+    expect(validatePhoto({ type: 'image/jpeg', size: MAX_PHOTO_BYTES + 1 })).toMatch(/2 MB/)
+    expect(photoExtension('image/webp')).toBe('webp')
+    expect(photoExtension('application/pdf')).toBeNull()
+  })
+
+  it('puts the tenant id first in the photo path, which the storage policy relies on', () => {
+    expect(buildPhotoPath('tenant-1', 'stu-9', 'abc', 'jpg')).toBe('tenant-1/stu-9-abc.jpg')
+  })
+
+  it('gives the date in Nairobi, not UTC, around midnight', () => {
+    // 22:30 UTC on 17 Oct is 01:30 on 18 Oct in Nairobi (UTC+3).
+    expect(todayInNairobi(new Date('2026-10-17T22:30:00Z'))).toBe('2026-10-18')
+  })
+
+  it('takes the new registration fields and keeps them optional', () => {
+    const base = { firstName: 'Amina', gender: 'female', dateOfBirth: '2016-03-04' }
+    const minimal = quickCreateStudentSchema.parse(base)
+    expect(minimal.tuitionWaiver).toBe(false)
+    expect(minimal.mediaConsent).toBe(false)
+
+    const full = quickCreateStudentSchema.parse({
+      ...base,
+      nationality: 'Kenyan',
+      religion: 'Christian',
+      address: 'Kisumu',
+      tuitionWaiver: true,
+      admittedOn: '2026-10-18',
+      sessionId: '8c1d3a3e-5f0b-4a54-9d3f-1b2c3d4e5f60',
+    })
+    expect(full.tuitionWaiver).toBe(true)
+    expect(full.admittedOn).toBe('2026-10-18')
+    expect(() => quickCreateStudentSchema.parse({ ...base, admittedOn: '18/10/2026' })).toThrow()
   })
 })

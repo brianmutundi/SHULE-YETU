@@ -1,7 +1,7 @@
 import { getSessionContext } from '@/lib/auth/session'
 import { getAcademicPeriod } from '@/lib/auth/period'
 import { can } from '@/lib/auth/permissions'
-import { getFilterOptions, getStudentDirectory } from '@/features/students/queries'
+import { getFilterOptions, getRegistrationOptions, getStudentDirectory } from '@/features/students/queries'
 import { directorySearchSchema } from '@/features/students/schema'
 import { DirectoryView } from '@/features/students/components/directory-view'
 import { QuickCreateStudent } from '@/features/students/components/quick-create-student'
@@ -29,7 +29,9 @@ export default async function StudentDirectoryPage({
     ? parsed.data
     : { search: '', status: 'all' as const, gender: 'all' as const, streamId: '', page: 1 }
 
-  const [result, options] = await Promise.all([
+  const canEnrol = can(session.role, 'student.enrol')
+
+  const [result, options, registrationOptions] = await Promise.all([
     getStudentDirectory({
       search: filters.search,
       status: filters.status,
@@ -39,6 +41,7 @@ export default async function StudentDirectoryPage({
       pageSize: 25,
     }),
     period ? getFilterOptions(period.academicYearId) : Promise.resolve({ classes: [], streams: [] }),
+    canEnrol ? getRegistrationOptions() : Promise.resolve(null),
   ])
 
   return (
@@ -50,7 +53,7 @@ export default async function StudentDirectoryPage({
             {period ? `Streams for ${period.calendarYear}.` : 'No academic year set up.'}
           </p>
         </div>
-        {can(session.role, 'student.enrol') && <QuickCreateStudent options={options} />}
+        {registrationOptions && <QuickCreateStudent options={registrationOptions} />}
       </div>
 
       <DirectoryView
