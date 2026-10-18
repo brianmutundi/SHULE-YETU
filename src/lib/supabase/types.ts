@@ -307,6 +307,181 @@ export type Database = {
           },
         ]
       }
+      student_counters: {
+        Row: {
+          next_value: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          next_value?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          next_value?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_counters_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      students: {
+        Row: {
+          address: string | null
+          admitted_class_id: string | null
+          admitted_on: string | null
+          admitted_session_id: string | null
+          assessment_number: string | null
+          birth_cert_no: string | null
+          county: string | null
+          created_at: string
+          current_stream_id: string | null
+          date_of_birth: string
+          deleted_at: string | null
+          destination_school: string | null
+          email: string | null
+          first_name: string
+          gender: Database["public"]["Enums"]["student_gender"]
+          house: string | null
+          id: string
+          nationality: string | null
+          orphan_status: Database["public"]["Enums"]["orphan_status"]
+          other_names: string | null
+          pathway_id: string | null
+          phone: string | null
+          photo_url: string | null
+          previous_school: string | null
+          religion: string | null
+          special_needs_category: string | null
+          special_needs_notes: string | null
+          status: Database["public"]["Enums"]["student_status"]
+          student_no: string
+          sub_county: string | null
+          surname: string | null
+          tenant_id: string
+          track: string | null
+          transfer_reason: string | null
+          tuition_waiver: boolean
+          updated_at: string
+          upi: string | null
+        }
+        Insert: {
+          address?: string | null
+          admitted_class_id?: string | null
+          admitted_on?: string | null
+          admitted_session_id?: string | null
+          assessment_number?: string | null
+          birth_cert_no?: string | null
+          county?: string | null
+          created_at?: string
+          current_stream_id?: string | null
+          date_of_birth: string
+          deleted_at?: string | null
+          destination_school?: string | null
+          email?: string | null
+          first_name: string
+          gender: Database["public"]["Enums"]["student_gender"]
+          house?: string | null
+          id?: string
+          nationality?: string | null
+          orphan_status?: Database["public"]["Enums"]["orphan_status"]
+          other_names?: string | null
+          pathway_id?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          previous_school?: string | null
+          religion?: string | null
+          special_needs_category?: string | null
+          special_needs_notes?: string | null
+          status?: Database["public"]["Enums"]["student_status"]
+          student_no: string
+          sub_county?: string | null
+          surname?: string | null
+          tenant_id: string
+          track?: string | null
+          transfer_reason?: string | null
+          tuition_waiver?: boolean
+          updated_at?: string
+          upi?: string | null
+        }
+        Update: {
+          address?: string | null
+          admitted_class_id?: string | null
+          admitted_on?: string | null
+          admitted_session_id?: string | null
+          assessment_number?: string | null
+          birth_cert_no?: string | null
+          county?: string | null
+          created_at?: string
+          current_stream_id?: string | null
+          date_of_birth?: string
+          deleted_at?: string | null
+          destination_school?: string | null
+          email?: string | null
+          first_name?: string
+          gender?: Database["public"]["Enums"]["student_gender"]
+          house?: string | null
+          id?: string
+          nationality?: string | null
+          orphan_status?: Database["public"]["Enums"]["orphan_status"]
+          other_names?: string | null
+          pathway_id?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          previous_school?: string | null
+          religion?: string | null
+          special_needs_category?: string | null
+          special_needs_notes?: string | null
+          status?: Database["public"]["Enums"]["student_status"]
+          student_no?: string
+          sub_county?: string | null
+          surname?: string | null
+          tenant_id?: string
+          track?: string | null
+          transfer_reason?: string | null
+          tuition_waiver?: boolean
+          updated_at?: string
+          upi?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_admitted_class_id_fkey"
+            columns: ["admitted_class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "students_admitted_session_id_fkey"
+            columns: ["admitted_session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "students_current_stream_id_fkey"
+            columns: ["current_stream_id"]
+            isOneToOne: false
+            referencedRelation: "streams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "students_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           boarding_mode: Database["public"]["Enums"]["boarding_mode"]
@@ -393,6 +568,8 @@ export type Database = {
         Args: { p_labels?: string[]; p_tenant: string; p_year: string }
         Returns: number
       }
+      next_student_no: { Args: { p_tenant: string }; Returns: string }
+      student_directory_stats: { Args: never; Returns: Json }
     }
     Enums: {
       app_role:
@@ -417,8 +594,22 @@ export type Database = {
         | "junior_school"
         | "senior_school"
       operating_mode: "basic" | "senior"
+      orphan_status:
+        | "none"
+        | "one_parent_deceased"
+        | "both_deceased"
+        | "unknown"
       ownership_type: "public" | "private"
       school_type: "primary" | "junior" | "primary_junior" | "senior"
+      student_gender: "male" | "female"
+      student_status:
+        | "draft"
+        | "active"
+        | "inactive"
+        | "completed"
+        | "graduated"
+        | "transferred"
+        | "withdrawn"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -573,8 +764,24 @@ export const Constants = {
         "senior_school",
       ],
       operating_mode: ["basic", "senior"],
+      orphan_status: [
+        "none",
+        "one_parent_deceased",
+        "both_deceased",
+        "unknown",
+      ],
       ownership_type: ["public", "private"],
       school_type: ["primary", "junior", "primary_junior", "senior"],
+      student_gender: ["male", "female"],
+      student_status: [
+        "draft",
+        "active",
+        "inactive",
+        "completed",
+        "graduated",
+        "transferred",
+        "withdrawn",
+      ],
     },
   },
 } as const
