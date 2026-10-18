@@ -132,6 +132,65 @@ export type Database = {
           },
         ]
       }
+      guardians: {
+        Row: {
+          absence_reason: string | null
+          address: string | null
+          created_at: string
+          deleted_at: string | null
+          email: string | null
+          full_name: string
+          id: string
+          is_deceased: boolean
+          national_id: string | null
+          occupation: string | null
+          occupation_category: string | null
+          phone: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          absence_reason?: string | null
+          address?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          is_deceased?: boolean
+          national_id?: string | null
+          occupation?: string | null
+          occupation_category?: string | null
+          phone: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          absence_reason?: string | null
+          address?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          is_deceased?: boolean
+          national_id?: string | null
+          occupation?: string | null
+          occupation_category?: string | null
+          phone?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guardians_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       levels: {
         Row: {
           created_at: string
@@ -329,6 +388,51 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: true
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_guardians: {
+        Row: {
+          created_at: string
+          guardian_id: string
+          is_emergency_contact: boolean
+          is_fee_payer: boolean
+          is_primary: boolean
+          relationship: Database["public"]["Enums"]["guardian_relationship"]
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          guardian_id: string
+          is_emergency_contact?: boolean
+          is_fee_payer?: boolean
+          is_primary?: boolean
+          relationship?: Database["public"]["Enums"]["guardian_relationship"]
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          guardian_id?: string
+          is_emergency_contact?: boolean
+          is_fee_payer?: boolean
+          is_primary?: boolean
+          relationship?: Database["public"]["Enums"]["guardian_relationship"]
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_guardians_guardian_id_fkey"
+            columns: ["guardian_id"]
+            isOneToOne: false
+            referencedRelation: "guardians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_guardians_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
             referencedColumns: ["id"]
           },
         ]
@@ -587,6 +691,14 @@ export type Database = {
         | "parent"
       boarding_mode: "day" | "boarding" | "mixed"
       gender_type: "boys" | "girls" | "mixed"
+      guardian_relationship:
+        | "parent"
+        | "grandparent"
+        | "sibling"
+        | "aunt_uncle"
+        | "relative"
+        | "guardian"
+        | "other"
       level_stage:
         | "pre_primary"
         | "lower_primary"
@@ -756,6 +868,15 @@ export const Constants = {
       ],
       boarding_mode: ["day", "boarding", "mixed"],
       gender_type: ["boys", "girls", "mixed"],
+      guardian_relationship: [
+        "parent",
+        "grandparent",
+        "sibling",
+        "aunt_uncle",
+        "relative",
+        "guardian",
+        "other",
+      ],
       level_stage: [
         "pre_primary",
         "lower_primary",
