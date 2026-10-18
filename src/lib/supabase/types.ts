@@ -226,6 +226,84 @@ export type Database = {
           },
         ]
       }
+      pathway_subjects: {
+        Row: {
+          id: string
+          pathway_id: string
+          requirement: string
+          subject_id: string
+          tenant_id: string
+        }
+        Insert: {
+          id?: string
+          pathway_id: string
+          requirement?: string
+          subject_id: string
+          tenant_id: string
+        }
+        Update: {
+          id?: string
+          pathway_id?: string
+          requirement?: string
+          subject_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pathway_subjects_pathway_id_fkey"
+            columns: ["pathway_id"]
+            isOneToOne: false
+            referencedRelation: "pathways"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pathway_subjects_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pathway_subjects_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pathways: {
+        Row: {
+          code: string
+          id: string
+          name: string
+          sort_order: number
+          tenant_id: string
+        }
+        Insert: {
+          code: string
+          id?: string
+          name: string
+          sort_order?: number
+          tenant_id: string
+        }
+        Update: {
+          code?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pathways_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -366,6 +444,100 @@ export type Database = {
           },
         ]
       }
+      student_academic_profile: {
+        Row: {
+          previous_school: string | null
+          student_id: string
+          tenant_id: string
+          transfer_reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          previous_school?: string | null
+          student_id: string
+          tenant_id: string
+          transfer_reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          previous_school?: string | null
+          student_id?: string
+          tenant_id?: string
+          transfer_reason?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_academic_profile_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: true
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_academic_profile_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_consents: {
+        Row: {
+          consent_kind: string
+          granted: boolean
+          granted_at: string
+          granted_by: string | null
+          id: string
+          lawful_basis: string
+          student_id: string
+          tenant_id: string
+        }
+        Insert: {
+          consent_kind: string
+          granted: boolean
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          lawful_basis?: string
+          student_id: string
+          tenant_id: string
+        }
+        Update: {
+          consent_kind?: string
+          granted?: boolean
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          lawful_basis?: string
+          student_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_consents_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_consents_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_consents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_counters: {
         Row: {
           next_value: number
@@ -388,6 +560,58 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: true
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_documents: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          storage_path: string
+          student_id: string
+          tenant_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          storage_path: string
+          student_id: string
+          tenant_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          storage_path?: string
+          student_id?: string
+          tenant_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_documents_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_documents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -433,6 +657,142 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_logistics: {
+        Row: {
+          boarding_status: string | null
+          student_id: string
+          tenant_id: string
+          transport_mode: string | null
+          transport_route: string | null
+          updated_at: string
+        }
+        Insert: {
+          boarding_status?: string | null
+          student_id: string
+          tenant_id: string
+          transport_mode?: string | null
+          transport_route?: string | null
+          updated_at?: string
+        }
+        Update: {
+          boarding_status?: string | null
+          student_id?: string
+          tenant_id?: string
+          transport_mode?: string | null
+          transport_route?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_logistics_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: true
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_logistics_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_medical: {
+        Row: {
+          allergies: string | null
+          blood_group: string | null
+          challenges: string | null
+          conditions: string | null
+          emergency_contact: string | null
+          strengths: string | null
+          student_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          allergies?: string | null
+          blood_group?: string | null
+          challenges?: string | null
+          conditions?: string | null
+          emergency_contact?: string | null
+          strengths?: string | null
+          student_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          allergies?: string | null
+          blood_group?: string | null
+          challenges?: string | null
+          conditions?: string | null
+          emergency_contact?: string | null
+          strengths?: string | null
+          student_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_medical_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: true
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_medical_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_subjects: {
+        Row: {
+          chosen_by: string | null
+          selection_cutoff_at: string | null
+          student_id: string
+          subject_id: string
+        }
+        Insert: {
+          chosen_by?: string | null
+          selection_cutoff_at?: string | null
+          student_id: string
+          subject_id: string
+        }
+        Update: {
+          chosen_by?: string | null
+          selection_cutoff_at?: string | null
+          student_id?: string
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_subjects_chosen_by_fkey"
+            columns: ["chosen_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_subjects_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_subjects_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
@@ -586,6 +946,38 @@ export type Database = {
           },
         ]
       }
+      subjects: {
+        Row: {
+          code: string
+          id: string
+          is_core: boolean
+          name: string
+          tenant_id: string
+        }
+        Insert: {
+          code: string
+          id?: string
+          is_core?: boolean
+          name: string
+          tenant_id: string
+        }
+        Update: {
+          code?: string
+          id?: string
+          is_core?: boolean
+          name?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subjects_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           boarding_mode: Database["public"]["Enums"]["boarding_mode"]
@@ -668,6 +1060,7 @@ export type Database = {
         Args: { p_from_year: string; p_replace?: boolean; p_to_year: string }
         Returns: number
       }
+      enrol_student: { Args: { p_payload: Json }; Returns: string }
       ensure_streams: {
         Args: { p_labels?: string[]; p_tenant: string; p_year: string }
         Returns: number
