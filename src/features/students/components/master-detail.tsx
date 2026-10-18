@@ -12,6 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { RecordPaymentDialog } from '@/features/fees/components/record-payment-dialog'
+import { StudentPaymentsDialog } from '@/features/fees/components/student-payments-dialog'
+import type { PaymentRow } from '@/features/fees/types'
 import { AddGuardianDialog } from '@/features/guardians/components/add-guardian-dialog'
 import type {
   GuardianWithStudents,
@@ -60,6 +63,10 @@ export function MasterDetail({
   canLink,
   canRecordPayment,
   canViewPayments,
+  canReverse,
+  payIntent,
+  payments,
+  today,
 }: {
   pane: Pane
   students: MasterStudentListItem[]
@@ -74,10 +81,18 @@ export function MasterDetail({
   canLink: boolean
   canRecordPayment: boolean
   canViewPayments: boolean
+  canReverse: boolean
+  /** From ?pay=. Opens the payment dialogs over the selected learner. */
+  payIntent: PaymentIntent | null
+  payments: PaymentRow[]
+  /** yyyy-MM-dd in Africa/Nairobi. */
+  today: string
 }) {
   const [pending, startTransition] = useTransition()
   const router = useRouter()
   const searchParams = useSearchParams()
+  // Bumped by "Record another" so the dialog remounts with a fresh form and key.
+  const [payRound, setPayRound] = useState(0)
   const [addParentFor, setAddParentFor] = useState<{ id: string; fullName: string } | null>(null)
 
   /** Apply a patch to the query string. null removes a key. */
@@ -226,6 +241,27 @@ export function MasterDetail({
           <p className="text-sm text-muted-foreground">Select a learner to see their record.</p>
         )}
       </div>
+
+      {payIntent === 'record' && profile && (
+        <RecordPaymentDialog
+          key={`${profile.id}-${payRound}`}
+          studentId={profile.id}
+          studentName={profile.fullName}
+          sessionId={sessionId}
+          today={today}
+          onClose={() => go({ pay: null })}
+          onRecordAnother={() => setPayRound((r) => r + 1)}
+        />
+      )}
+      {payIntent === 'history' && profile && (
+        <StudentPaymentsDialog
+          studentId={profile.id}
+          studentName={profile.fullName}
+          payments={payments}
+          canReverse={canReverse}
+          onClose={() => go({ pay: null })}
+        />
+      )}
 
       {addParentFor && (
         <AddGuardianDialog

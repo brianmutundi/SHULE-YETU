@@ -24,7 +24,7 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-3 z-20 mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-4">
+      <header className="sticky top-3 z-20 mx-auto print:hidden flex w-full max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-4">
         <div className="flex min-w-0 flex-col items-start gap-1">
           <Link href="/home" className="truncate font-semibold tracking-tight">
             {session.tenantName}

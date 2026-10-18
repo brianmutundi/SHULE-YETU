@@ -2150,6 +2150,207 @@ export type Database = {
         }
         Relationships: []
       }
+      fee_items: {
+        Row: {
+          amount: number
+          applies_to_class_id: string | null
+          boarding_only: boolean
+          created_at: string
+          id: string
+          name: string
+          structure_id: string
+          tenant_id: string
+          vote_head: string
+        }
+        Insert: {
+          amount: number
+          applies_to_class_id?: string | null
+          boarding_only?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          structure_id: string
+          tenant_id: string
+          vote_head: string
+        }
+        Update: {
+          amount?: number
+          applies_to_class_id?: string | null
+          boarding_only?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          structure_id?: string
+          tenant_id?: string
+          vote_head?: string
+        }
+        Relationships: []
+      }
+      fee_structures: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          session_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          session_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          session_id?: string
+          tenant_id?: string
+        }
+        Relationships: []
+      }
+      invoice_lines: {
+        Row: {
+          amount: number
+          description: string
+          fee_item_id: string | null
+          id: string
+          invoice_id: string
+          tenant_id: string
+          vote_head: string
+          waived: boolean
+        }
+        Insert: {
+          amount: number
+          description: string
+          fee_item_id?: string | null
+          id?: string
+          invoice_id: string
+          tenant_id: string
+          vote_head: string
+          waived?: boolean
+        }
+        Update: {
+          amount?: number
+          description?: string
+          fee_item_id?: string | null
+          id?: string
+          invoice_id?: string
+          tenant_id?: string
+          vote_head?: string
+          waived?: boolean
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          created_at: string
+          credit_applied: number
+          id: string
+          session_id: string
+          status: string
+          student_id: string
+          tenant_id: string
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credit_applied?: number
+          id?: string
+          session_id: string
+          status?: string
+          student_id: string
+          tenant_id: string
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credit_applied?: number
+          id?: string
+          session_id?: string
+          status?: string
+          student_id?: string
+          tenant_id?: string
+          total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          idempotency_key: string | null
+          invoice_id: string
+          method: string
+          paid_at: string
+          reason: string | null
+          receipt_no: string
+          recorded_by: string | null
+          reference: string | null
+          reverses_payment_id: string | null
+          status: string
+          student_id: string
+          tenant_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          invoice_id: string
+          method: string
+          paid_at?: string
+          reason?: string | null
+          receipt_no: string
+          recorded_by?: string | null
+          reference?: string | null
+          reverses_payment_id?: string | null
+          status?: string
+          student_id: string
+          tenant_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          invoice_id?: string
+          method?: string
+          paid_at?: string
+          reason?: string | null
+          receipt_no?: string
+          recorded_by?: string | null
+          reference?: string | null
+          reverses_payment_id?: string | null
+          status?: string
+          student_id?: string
+          tenant_id?: string
+        }
+        Relationships: []
+      }
+      receipt_counters: {
+        Row: {
+          last_value: number
+          tenant_id: string
+          year: number
+        }
+        Insert: {
+          last_value?: number
+          tenant_id: string
+          year: number
+        }
+        Update: {
+          last_value?: number
+          tenant_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       staff_directory: {
@@ -2190,8 +2391,49 @@ export type Database = {
           },
         ]
       }
+      student_balances: {
+        Row: {
+          balance: number | null
+          billed: number | null
+          credit: number | null
+          invoice_id: string | null
+          paid: number | null
+          session_id: string | null
+          student_id: string | null
+          tenant_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      fee_statement: {
+        Args: { p_session: string; p_student: string }
+        Returns: Json
+      }
+      generate_invoice: {
+        Args: { p_session: string; p_student: string }
+        Returns: string
+      }
+      payment_receipt: {
+        Args: { p_payment: string }
+        Returns: Json
+      }
+      record_payment: {
+        Args: {
+          p_amount: number
+          p_key?: string
+          p_method: string
+          p_paid_at?: string
+          p_reference?: string
+          p_session?: string
+          p_student: string
+        }
+        Returns: Json
+      }
+      reverse_payment: {
+        Args: { p_payment: string; p_reason: string }
+        Returns: Json
+      }
       add_student_guardian: {
         Args: { p_guardian: Json; p_student: string }
         Returns: string
