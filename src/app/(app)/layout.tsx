@@ -12,7 +12,14 @@ import { TermPill } from './term-pill'
 // Required on the layout as well as each page under Cache Components.
 export const instant = false
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({
+  children,
+  modal,
+}: {
+  children: React.ReactNode
+  /** Intercepted routes (Classes, Transitions) render here as modals. */
+  modal: React.ReactNode
+}) {
   const session = await getSessionContext()
 
   return (
@@ -47,6 +54,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </header>
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6">{children}</main>
+      {modal}
     </div>
   )
 }

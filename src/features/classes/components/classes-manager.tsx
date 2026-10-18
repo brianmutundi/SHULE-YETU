@@ -17,6 +17,7 @@ import {
 import type { ClassRow } from '../queries'
 import type { YearOption } from '@/lib/auth/period'
 import { cloneStreams, createStream, deleteStream, seedDefaultStreams } from '../actions'
+import { EditStreamLabelDialog } from './edit-stream-label-dialog'
 
 function Submit({
   children,
@@ -35,11 +36,14 @@ export function ClassesManager({
   classes,
   years,
   selectedYearId,
+  calendarYear,
   canManage,
 }: {
   classes: ClassRow[]
   years: YearOption[]
   selectedYearId: string | null
+  /** The selected year, shown in the Year column. */
+  calendarYear: number | null
   canManage: boolean
 }) {
   const [createState, createAction] = useActionState(createStream, null)
@@ -77,9 +81,9 @@ export function ClassesManager({
             <tr>
               <th scope="col" className="px-4 py-2 font-medium">Label</th>
               <th scope="col" className="px-4 py-2 font-medium">Stream</th>
-              <th scope="col" className="px-4 py-2 font-medium">Full name</th>
+              <th scope="col" className="px-4 py-2 font-medium">Full Name</th>
               <th scope="col" className="px-4 py-2 font-medium">Level</th>
-              <th scope="col" className="px-4 py-2 font-medium">Next class</th>
+              <th scope="col" className="px-4 py-2 font-medium">Year</th>
               {canManage && (
                 <th scope="col" className="px-4 py-2 text-right font-medium">
                   <span className="sr-only">Actions</span>
@@ -97,7 +101,7 @@ export function ClassesManager({
                         No streams yet
                       </td>
                       <td className="px-4 py-2 text-muted-foreground">{row.stageName}</td>
-                      <td className="px-4 py-2 text-muted-foreground">-</td>
+                      <td className="px-4 py-2 text-muted-foreground">{calendarYear ?? '-'}</td>
                       {canManage && <td className="px-4 py-2" />}
                     </tr>,
                   ]
@@ -109,15 +113,20 @@ export function ClassesManager({
                       </td>
                       <td className="px-4 py-2">{stream.fullName}</td>
                       <td className="px-4 py-2 text-muted-foreground">{row.stageName}</td>
-                      <td className="px-4 py-2 text-muted-foreground">
-                        {classes.find((c) => c.id === row.nextClassId)?.label ?? 'End of school'}
-                      </td>
+                      <td className="px-4 py-2 text-muted-foreground">{calendarYear ?? '-'}</td>
                       <td className="px-4 py-2 text-right">
                         {canManage && (
-                          <DeleteStreamButton
-                            streamId={stream.id}
-                            streamLabel={`${row.label} ${stream.label}`}
-                          />
+                          <div className="flex items-start justify-end gap-1">
+                            <EditStreamLabelDialog
+                              streamId={stream.id}
+                              classLabel={row.label}
+                              streamLabel={stream.label}
+                            />
+                            <DeleteStreamButton
+                              streamId={stream.id}
+                              streamLabel={`${row.label} ${stream.label}`}
+                            />
+                          </div>
                         )}
                       </td>
                     </tr>
