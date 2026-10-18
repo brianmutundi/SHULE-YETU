@@ -462,6 +462,8 @@ Real module, not a stub. Own phase in the build order.
 - Performance: batch queries, select needed columns, paginate, cache read-heavy lookups with short revalidation, aggregate in SQL.
 - Webhooks and third-party callbacks: verify signature and source IP, be idempotent, store the raw payload.
 - **SQL safety rules that have already caused bugs here:** use `is distinct from` rather than `<>` whenever a column may be NULL, and use the PL/pgSQL `FOUND` flag rather than testing a scalar for NULL to decide whether a row existed.
+- **Derived columns are derived in the database, not sent twice by the client.** A stream belongs to exactly one class, so `students.admitted_class_id` is filled by a trigger from `current_stream_id` rather than accepted in the enrolment payload, where the two could disagree. The same applies to any other value derivable from one already trusted.
+- **`RAISE EXCEPTION` takes a value, not a bare `CASE`.** Compute the message into a variable first.
 
 ---
 
@@ -484,8 +486,8 @@ A feature is done only when:
 2. **Reference data:** academic years, sessions, levels, classes, streams, Classes and Streams manager. Pathways and subjects seeding in senior mode.
 3. **Students core:** schema, ID generator, directory table, filters, search, stat cards.
 4. **Master-detail screen**, quick registration modal, **guardians view and Link Student**.
-5. **Enrollment wizard** with draft autosave and atomic submit. **Senior intake/placement flow.**
-6. **Full Student Record** tabs, medical, logistics, documents, consents.
+5. **Enrollment wizard** with draft autosave and atomic submit. **Senior intake/placement flow.** (DONE. Draft autosave and the separate senior intake screen are NOT built; the wizard's senior step 2 covers placement inline. Documents are collected in Phase 6.)
+6. **Full Student Record** tabs, medical, logistics, documents, consents. (IN PROGRESS. The tables and the wizard's writes are done in Phase 5; the read tabs remain.)
 7. **Bulk import.**
 8. **Transitions:** sessions, years, promotion engine with dry-run, rollback and **mode-aware chains plus exit-checkpoint holds**.
 9. **Attendance** and **Staff.**

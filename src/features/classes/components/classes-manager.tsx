@@ -18,10 +18,14 @@ import type { ClassRow } from '../queries'
 import type { YearOption } from '@/lib/auth/period'
 import { cloneStreams, createStream, deleteStream, seedDefaultStreams } from '../actions'
 
-function Submit({ children, disabled }: { children: React.ReactNode; disabled?: boolean }) {
+function Submit({
+  children,
+  disabled,
+  ...rest
+}: { children: React.ReactNode; disabled?: boolean } & Record<string, unknown>) {
   const { pending } = useFormStatus()
   return (
-    <Button type="submit" size="sm" disabled={pending || disabled}>
+    <Button type="submit" size="sm" disabled={pending || disabled} {...rest}>
       {pending ? 'Working...' : children}
     </Button>
   )
@@ -76,6 +80,11 @@ export function ClassesManager({
               <th scope="col" className="px-4 py-2 font-medium">Full name</th>
               <th scope="col" className="px-4 py-2 font-medium">Level</th>
               <th scope="col" className="px-4 py-2 font-medium">Next class</th>
+              {canManage && (
+                <th scope="col" className="px-4 py-2 text-right font-medium">
+                  <span className="sr-only">Actions</span>
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -89,6 +98,7 @@ export function ClassesManager({
                       </td>
                       <td className="px-4 py-2 text-muted-foreground">{row.stageName}</td>
                       <td className="px-4 py-2 text-muted-foreground">-</td>
+                      {canManage && <td className="px-4 py-2" />}
                     </tr>,
                   ]
                 : row.streams.map((stream) => (
@@ -101,6 +111,14 @@ export function ClassesManager({
                       <td className="px-4 py-2 text-muted-foreground">{row.stageName}</td>
                       <td className="px-4 py-2 text-muted-foreground">
                         {classes.find((c) => c.id === row.nextClassId)?.label ?? 'End of school'}
+                      </td>
+                      <td className="px-4 py-2 text-right">
+                        {canManage && (
+                          <DeleteStreamButton
+                            streamId={stream.id}
+                            streamLabel={`${row.label} ${stream.label}`}
+                          />
+                        )}
                       </td>
                     </tr>
                   )),
@@ -218,21 +236,37 @@ export function ClassesManager({
   )
 }
 
-/** Delete is exposed separately so the UI can hide it until students exist. */
+/**
+ * Stream delete.
+ *
+ * A stream that still has learners is refused by the database, so the reason is
+ * shown here rather than the delete appearing to succeed.
+ */
 export function DeleteStreamButton({
   streamId,
-  disabled,
+  streamLabel,
 }: {
   streamId: string
-  disabled: boolean
+  streamLabel: string
 }) {
-  const [, action] = useActionState(deleteStream, null)
-  if (disabled) return null
+  const [state, action, pending] = useActionState(deleteStream, null)
 
   return (
-    <form action={action}>
-      <input type="hidden" name="streamId" value={streamId} />
-      <Submit>Delete</Submit>
-    </form>
+    <div className="space-y-1">
+      <form action={action}>
+        <input type="hidden" name="streamId" value={streamId} />
+        <Submit
+          disabled={pending}
+          aria-label={`Delete stream ${streamLabel}`}
+        >
+          {pending ? 'Deleting...' : 'Delete'}
+        </Submit>
+      </form>
+      {state && !state.ok && (
+        <p className="max-w-48 text-xs text-destructive" role="alert">
+          {state.error}
+        </p>
+      )}
+    </div>
   )
 }

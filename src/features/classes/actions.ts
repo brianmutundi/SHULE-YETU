@@ -94,9 +94,9 @@ export async function deleteStream(
 
   const supabase = await createClient()
 
-  // Students arrive in Phase 3. Until the students table exists this check
-  // cannot run, so the UI hides Delete for streams and the guard is a no-op.
-  // Reinstated in Phase 3 alongside the students table.
+  // The database refuses to delete a stream that still has learners
+  // (streams_students_present guard), so an occupied stream surfaces the
+  // database's message rather than a silent no-op.
   const { error } = await supabase.from('streams').delete().eq('id', streamId)
 
   if (error) return { ok: false, error: error.message }
