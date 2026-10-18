@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
@@ -25,7 +25,7 @@ function SubmitButton() {
   const { pending } = useFormStatus()
   return (
     <Button type="submit" className="w-full" disabled={pending}>
-      {pending ? 'Setting up your schoolâ€¦' : 'Create school and continue'}
+      {pending ? 'Setting up your school...' : 'Create school and continue'}
     </Button>
   )
 }
@@ -45,7 +45,7 @@ export function RegisterForm() {
         </Alert>
       )}
 
-      {/* Step 1 â€” school type. Everything else depends on this choice. */}
+      {/* Step 1:  school type. Everything else depends on this choice. */}
       <fieldset className="space-y-4">
         <legend className="text-lg font-semibold">What kind of school is this?</legend>
         <p className="text-sm text-muted-foreground">
@@ -88,7 +88,7 @@ export function RegisterForm() {
           <p className="font-medium">
             {definition.label} will be set up with:
           </p>
-          <p className="mt-1 text-muted-foreground">{classes.join(' â†’ ')}</p>
+          <p className="mt-1 text-muted-foreground">{classes.join(' -> ')}</p>
           {definition.exitCheckpoints.length > 0 ? (
             <p className="mt-2 text-muted-foreground">
               Exit assessment: {definition.exitCheckpoints.join(' and ')}.
@@ -99,7 +99,7 @@ export function RegisterForm() {
         </div>
       </fieldset>
 
-      {/* Step 2 â€” school profile */}
+      {/* Step 2:  school profile */}
       <fieldset className="space-y-4">
         <legend className="text-lg font-semibold">School details</legend>
 
@@ -177,7 +177,7 @@ export function RegisterForm() {
         </div>
       </fieldset>
 
-      {/* Step 3 â€” administrator account */}
+      {/* Step 3:  administrator account */}
       <fieldset className="space-y-4">
         <legend className="text-lg font-semibold">Your administrator account</legend>
         <p className="text-sm text-muted-foreground">
