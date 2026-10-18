@@ -1055,6 +1055,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_student_guardian: {
+        Args: { p_guardian: Json; p_student: string }
+        Returns: string
+      }
       claim_tenant: { Args: { p_tenant: string }; Returns: string }
       clone_streams: {
         Args: { p_from_year: string; p_replace?: boolean; p_to_year: string }

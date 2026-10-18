@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { requirePermission } from '@/lib/auth/guards'
 import { resolveStudentNo } from './queries'
-import { createGuardianSchema, linkStudentSchema, unlinkStudentSchema } from './schema'
+import { createGuardianSchema, linkStudentSchema, unlinkStudentSchema, addStudentGuardianSchema } from './schema'
 
 /**
  * Resolve an admission number to a learner name, for the Link Student dialog.
@@ -164,4 +164,75 @@ export async function unlinkStudent(
 
   revalidatePath('/', 'layout')
   return { ok: true, guardianId: parsed.data.guardianId }
+}
+
+/**
+ * Add a guardian to a learner from the Full Student Record (section 7.7).
+ *
+ * Creates the guardian and the link together through app.add_student_guardian,
+ * so a failure cannot leave a guardian row that no learner references.
+ */
+export async function addStudentGuardian(
+  _prev: GuardianActionResult | null,
+  formData: FormData,
+): Promise<GuardianActionResult> {
+  await requirePermission('guardian.manage')
+
+  const parsed = addStudentGuardianSchema.safeParse({
+    studentId: formData.get('studentId'),
+    fullName: formData.get('fullName'),
+    phone: formData.get('phone'),
+    email: formData.get('email') ?? '',
+    nationalId: formData.get('nationalId') ?? '',
+    occupation: formData.get('occupation') ?? '',
+    address: formData.get('address') ?? '',
+    relationship: formData.get('relationship') ?? 'parent',
+    isPrimary: formData.get('isPrimary') === 'true',
+    isEmergencyContact: formData.get('isEmergencyContact') === 'true',
+    isFeePayer: formData.get('isFeePayer') === 'true',
+    isDeceased: formData.get('isDeceased') === 'true',
+    absenceReason: formData.get('absenceReason') ?? '',
+  })
+
+  if (!parsed.success) {
+    const first = parsed.error.issues[0]
+    return {
+      ok: false,
+      error: first.path.length ? `${first.path.join('.')}: ${first.message}` : first.message,
+    }
+  }
+
+  const d = parsed.data
+  const supabase = await createClient()
+
+  const { data: guardianId, error } = await supabase.rpc('add_student_guardian', {
+    p_student: d.studentId,
+    p_guardian: {
+      fullName: d.fullName,
+      phone: d.phone,
+      email: d.email,
+      nationalId: d.nationalId,
+      occupation: d.occupation,
+      address: d.address,
+      relationship: d.relationship,
+      isPrimary: d.isPrimary,
+      isEmergencyContact: d.isEmergencyContact,
+      isFeePayer: d.isFeePayer,
+      isDeceased: d.isDeceased,
+      absenceReason: d.absenceReason,
+    } as never,
+  })
+
+  if (error) {
+    return {
+      ok: false,
+      error:
+        error.code === '23505'
+          ? 'This learner already has a primary guardian or a fee payer. Unlink the existing one first.'
+          : error.message,
+    }
+  }
+
+  revalidatePath(`/students/${d.studentId}`, 'page')
+  return { ok: true, guardianId: guardianId as string }
 }

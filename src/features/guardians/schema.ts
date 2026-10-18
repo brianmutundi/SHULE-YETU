@@ -40,3 +40,19 @@ export const unlinkStudentSchema = z.object({
   guardianId: z.string().uuid(),
   studentId: z.string().uuid(),
 })
+
+/**
+ * Add a guardian to a learner from the Full Student Record's Family tab.
+ *
+ * Same fields as createGuardianSchema plus the link flags, since the dialog
+ * collects both at once.
+ */
+export const addStudentGuardianSchema = createGuardianSchema.extend({
+  studentId: z.string().uuid(),
+  address: z.string().trim().max(200).optional().or(z.literal('')),
+  isPrimary: z.boolean().default(false),
+  isEmergencyContact: z.boolean().default(false),
+  isFeePayer: z.boolean().default(false),
+})
+
+export type AddStudentGuardianInput = z.input<typeof addStudentGuardianSchema>
