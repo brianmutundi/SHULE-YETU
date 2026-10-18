@@ -1,6 +1,7 @@
 import 'server-only'
 import { connection } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { signPhotoUrls } from '@/lib/storage/photos'
 import { getAcademicPeriod } from '@/lib/auth/period'
 import { getSessionContext } from '@/lib/auth/session'
 import type { AppRole } from '@/lib/auth/permissions'
@@ -43,7 +44,7 @@ export async function getSheet(streamId: string, date: string): Promise<Attendan
 
   if (error) throw new Error(error.message)
 
-  const rows = ((data ?? []) as unknown as {
+  const sheetData = (data ?? []) as unknown as {
     student_id: string
     student_no: string
     full_name: string
@@ -53,11 +54,17 @@ export async function getSheet(streamId: string, date: string): Promise<Attendan
     note: string | null
     marked_at: string | null
     rate: string | null
-  }[]).map((r) => ({
+  }[]
+  const photoUrls = await signPhotoUrls(
+    supabase,
+    sheetData.map((r) => r.photo_url),
+  )
+
+  const rows = sheetData.map((r) => ({
     studentId: r.student_id,
     studentNo: r.student_no,
     fullName: r.full_name,
-    photoUrl: r.photo_url,
+    photoUrl: r.photo_url ? (photoUrls.get(r.photo_url) ?? null) : null,
     status: r.status,
     excuseReason: r.excuse_reason,
     note: r.note,
@@ -72,6 +79,25 @@ export async function getSheet(streamId: string, date: string): Promise<Attendan
     // object is unwrapped rather than compared whole.
     canMark: canMark.data === true,
   }
+}
+
+/** Dates in [from, to] on which this stream has at least one mark. */
+export async function getMarkedDates(
+  streamId: string,
+  from: string,
+  to: string,
+): Promise<Set<string>> {
+  await connection()
+
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('attendance_records')
+    .select('date')
+    .eq('stream_id', streamId)
+    .gte('date', from)
+    .lte('date', to)
+
+  return new Set((data ?? []).map((r) => r.date))
 }
 
 /**

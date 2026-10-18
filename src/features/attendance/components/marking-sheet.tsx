@@ -2,6 +2,7 @@
 
 import { useActionState, useCallback, useEffect, useMemo, useState } from 'react'
 import { useFormStatus } from 'react-dom'
+import { Avatar } from '@/components/shared/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -101,9 +102,12 @@ function RowControl({
   return (
     <li className="space-y-2 border-b border-border px-3 py-3 last:border-0">
       <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate font-medium">{row.fullName}</p>
-          <p className="font-mono text-xs text-muted-foreground">{row.studentNo}</p>
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar name={row.fullName} src={row.photoUrl} size="md" />
+          <div className="min-w-0">
+            <p className="truncate font-medium">{row.fullName}</p>
+            <p className="font-mono text-xs text-muted-foreground">{row.studentNo}</p>
+          </div>
         </div>
         <RateBar rate={row.rate} />
       </div>

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { StreamOption } from '../queries'
+import { DateChips } from './date-chips'
 
 /**
  * Stream and date picker (CLAUDE.md section 7.11).
@@ -15,11 +16,15 @@ export function StreamPicker({
   streams,
   selectedId,
   date,
+  today,
+  markedDates,
   canMarkAnywhere,
 }: {
   streams: StreamOption[]
   selectedId: string
   date: string
+  today: string
+  markedDates: ReadonlySet<string>
   canMarkAnywhere: boolean
 }) {
   const markable = streams.filter((s) => s.canMark)
@@ -70,28 +75,12 @@ export function StreamPicker({
         </form>
 
         {/* Recent days, so marking yesterday after a late register is one click. */}
-        <div className="flex flex-wrap gap-1">
-          {[0, 1, 2].map((offset) => {
-            const d = new Date(`${date}T00:00:00Z`)
-            d.setUTCDate(d.getUTCDate() - offset)
-            const iso = d.toISOString().slice(0, 10)
-            const label = offset === 0 ? 'Today' : offset === 1 ? 'Yesterday' : iso.slice(5)
-
-            return (
-              <Link
-                key={iso}
-                href={`/attendance?stream=${selectedId}&date=${iso}`}
-                className={`rounded-full border px-3 py-1 text-xs ${
-                  iso === date
-                    ? 'border-primary bg-primary/10 font-medium'
-                    : 'border-border text-muted-foreground hover:bg-accent'
-                }`}
-              >
-                {label}
-              </Link>
-            )
-          })}
-        </div>
+        <DateChips
+          streamId={selectedId}
+          selected={date}
+          today={today}
+          markedDates={markedDates}
+        />
       </div>
 
       {canMarkAnywhere && markable.length > 0 && (

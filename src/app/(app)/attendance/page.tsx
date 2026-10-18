@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { getSessionContext } from '@/lib/auth/session'
 import { can } from '@/lib/auth/permissions'
-import { getSheet, getStreamOptions } from '@/features/attendance/queries'
+import { getMarkedDates, getSheet, getStreamOptions } from '@/features/attendance/queries'
+import { chipWindow } from '@/features/attendance/date-chips'
 import { attendanceQuerySchema } from '@/features/attendance/schema'
 import { MarkingSheet } from '@/features/attendance/components/marking-sheet'
 import { StreamPicker } from '@/features/attendance/components/stream-picker'
@@ -37,7 +38,13 @@ export default async function AttendancePage({
     requestedId || (streams.find((s) => s.canMark) ?? streams[0])?.id || ''
 
   const selected = streams.find((s) => s.id === selectedId) ?? null
-  const sheet = selected ? await getSheet(selected.id, date) : null
+  const window = chipWindow(date, today)
+  const [sheet, markedDates] = selected
+    ? await Promise.all([
+        getSheet(selected.id, date),
+        getMarkedDates(selected.id, window[0], window[window.length - 1]),
+      ])
+    : [null, new Set<string>()]
 
   return (
     <div className="space-y-6">
@@ -62,6 +69,8 @@ export default async function AttendancePage({
             streams={streams}
             selectedId={selectedId}
             date={date}
+            today={today}
+            markedDates={markedDates}
             canMarkAnywhere={can(session.role, 'attendance.mark')}
           />
 
