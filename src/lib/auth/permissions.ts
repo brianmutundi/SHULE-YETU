@@ -1,6 +1,8 @@
 import type { Database } from '@/lib/supabase/types'
 
 export type app_role = Database['public']['Enums']['app_role']
+/** Alias for code that prefers a conventional casing. */
+export type AppRole = app_role
 
 /**
  * Role permissions.
