@@ -46,8 +46,10 @@ export async function getSessionContext(): Promise<SessionContext> {
     .single()
 
   if (profileError || !profile?.tenant_id) {
-    // Signed in but not yet attached to a school.
-    redirect('/login')
+    // Signed in but not yet attached to a school: send them to finish setting
+    // one up. Redirecting to /login here would loop, because the proxy bounces
+    // an authenticated visitor away from /login straight back to /home.
+    redirect('/register')
   }
 
   const { data: tenant, error: tenantError } = await supabase

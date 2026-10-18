@@ -215,6 +215,7 @@ export type Database = {
           capitation_enabled: boolean
           county: string | null
           created_at: string
+          created_by: string | null
           currency: string
           gender: Database["public"]["Enums"]["gender_type"]
           id: string
@@ -237,6 +238,7 @@ export type Database = {
           capitation_enabled?: boolean
           county?: string | null
           created_at?: string
+          created_by?: string | null
           currency?: string
           gender?: Database["public"]["Enums"]["gender_type"]
           id?: string
@@ -259,6 +261,7 @@ export type Database = {
           capitation_enabled?: boolean
           county?: string | null
           created_at?: string
+          created_by?: string | null
           currency?: string
           gender?: Database["public"]["Enums"]["gender_type"]
           id?: string

@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { registrationSchema, signInSchema } from './schema'
+import { registrationSchema, signInSchema, type RegistrationValues } from './schema'
 import type { SchoolType } from '@/lib/school-type'
 
 export type ActionResult<T = undefined> =
@@ -55,6 +55,20 @@ export async function registerSchool(
   const data = parsed.data
   const supabase = await createClient()
 
+  // A user may already be signed in but not yet attached to a school (for
+  // example after an abandoned first attempt). In that case reuse the session
+  // instead of calling signUp again, which would try to create a duplicate
+  // account and fail on the unique email constraint.
+  const {
+    data: { user: existingUser },
+  } = await supabase.auth.getUser()
+
+  if (existingUser?.id) {
+    const outcome = await createTenantForExistingUser(supabase, existingUser.id, data)
+    // createTenantAndClaim redirects on success, so reaching here means failure.
+    return outcome ?? { ok: false, error: 'The school could not be set up. Please try again.' }
+  }
+
   // 1. Auth user. Metadata is display-only; authorization data never comes
   //    from here because raw_user_meta_data is user-editable.
   const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -73,7 +87,27 @@ export async function registerSchool(
   if (!authData.user) {
     return { ok: false, error: 'Could not create the account. Please try again.' }
   }
-  // 2. Tenant row.
+  return await createTenantAndClaim(
+    supabase,
+    authData.user.id,
+    data,
+    'The account was created but the school could not be set up. Please contact support.',
+  )
+}
+
+/**
+ * Create the tenant row, then claim it.
+ *
+ * claim_tenant() assigns the owner role and seeds the per-school-type
+ * levels/classes in one transaction. It is the only place that mapping
+ * happens, so the client can never choose classes directly.
+ */
+async function createTenantAndClaim(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  data: RegistrationValues,
+  tenantErrorMessage: string,
+): Promise<never> {
   const { data: tenant, error: tenantError } = await supabase
     .from('tenants')
     .insert({
@@ -88,26 +122,61 @@ export async function registerSchool(
       school_code: data.schoolCode || null,
       knec_center_code: data.knecCenterCode || null,
       capitation_enabled: data.capitationEnabled,
+      // Binds the tenant to this account. claim_tenant() refuses any other
+      // account, which stops one user adopting another's orphaned school.
+      created_by: userId,
     })
     .select('id')
     .single()
 
   if (tenantError || !tenant) {
-    return {
-      ok: false,
-      error: 'The account was created but the school could not be set up. Please contact support.',
-    }
+    throw new TenantSetupError(tenantErrorMessage)
   }
 
-  // 3. Claim the tenant. This assigns the owner role and seeds levels/classes.
   const { error: claimError } = await supabase.rpc('claim_tenant', { p_tenant: tenant.id })
 
   if (claimError) {
-    return { ok: false, error: claimError.message }
+    throw new TenantSetupError(claimError.message)
   }
 
   redirect('/home')
 }
+
+async function createTenantForExistingUser(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  data: RegistrationValues,
+): Promise<ActionResult<{ tenantId: string }>> {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', userId)
+    .single()
+
+  if (profile?.tenant_id) {
+    return { ok: true, data: { tenantId: profile.tenant_id } }
+  }
+
+  try {
+    await createTenantAndClaim(
+      supabase,
+      userId,
+      data,
+      'The school could not be set up. Please contact support.',
+    )
+  } catch (error) {
+    if (error instanceof TenantSetupError) {
+      return { ok: false, error: error.message }
+    }
+    throw error
+  }
+
+  // createTenantAndClaim always throws or redirects, so this is unreachable.
+  return { ok: false, error: 'The school could not be set up. Please try again.' }
+}
+
+/** Lets the helper abort an action without tripping the NEXT_REDIRECT check. */
+class TenantSetupError extends Error {}
 
 export async function signIn(
   _prev: ActionResult | null,

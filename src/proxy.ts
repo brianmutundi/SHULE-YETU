@@ -58,7 +58,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  if (user && isPublic) {
+  // /register serves two audiences: signed-out visitors creating their first
+  // account, and signed-in users who have not yet claimed a tenant. Only
+  // bounce away /login, which a signed-in user has no reason to revisit.
+  if (user && pathname.startsWith('/login')) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/home'
     redirectUrl.search = ''
