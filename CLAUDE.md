@@ -487,8 +487,8 @@ A feature is done only when:
 3. **Students core:** schema, ID generator, directory table, filters, search, stat cards.
 4. **Master-detail screen**, quick registration modal, **guardians view and Link Student**.
 5. **Enrollment wizard** with draft autosave and atomic submit. **Senior intake/placement flow.** (DONE. Draft autosave and the separate senior intake screen are NOT built; the wizard's senior step 2 covers placement inline. Documents are collected in Phase 6.)
-6. **Full Student Record** tabs, medical, logistics, documents, consents. (IN PROGRESS. The tables and the wizard's writes are done in Phase 5; the read tabs remain.)
-7. **Bulk import.**
+6. **Full Student Record** tabs, medical, logistics, documents, consents. (DONE. `/students/[id]` with Bio and admission, Family and contact, Academic, Medical, Logistics and finance, Docs and compliance. Finance, results and document upload show explicit "not available yet" states pointing at their phases. `student_academic_profile` was dropped as a duplicate of `students.previous_school`.)
+7. **Bulk import.** (IN PROGRESS, being built in parallel - not reviewed by the phases 5-6 work.)
 8. **Transitions:** sessions, years, promotion engine with dry-run, rollback and **mode-aware chains plus exit-checkpoint holds**.
 9. **Attendance** and **Staff.**
 10. **Assessments:** learning areas and strands, subjects and pathways, rubric, marks entry, SBA, checkpoints, report cards, transcript.
