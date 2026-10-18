@@ -2,47 +2,44 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { hasBoardingModule, type OperatingMode } from '@/lib/school-type'
+import { EllipsisVerticalIcon } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { cn } from '@/lib/utils'
+import { isActivePath, MENU_NAV, PILL_NAV } from './nav-items'
 
-interface NavItem {
-  href: string
-  label: string
-  /** Omitted when the item applies to every operating mode. */
-  seniorOnly?: boolean
-}
+const focusRing =
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring'
 
-const NAV_ITEMS: NavItem[] = [
-  { href: '/home', label: 'Home' },
-  { href: '/students', label: 'Students' },
-  { href: '/staff', label: 'Staff' },
-  { href: '/attendance', label: 'Attendance' },
-  { href: '/assessments', label: 'Assessments' },
-  { href: '/boarding', label: 'Boarding', seniorOnly: true },
-  { href: '/classes', label: 'Classes' },
-  { href: '/transitions', label: 'Transitions' },
-  { href: '/settings', label: 'Settings' },
-]
-
-export function PillNav({ mode }: { mode: OperatingMode }) {
+/** Floating pill: four primary screens, then a kebab for the rest. */
+export function PillNav() {
   const pathname = usePathname()
-
-  const items = NAV_ITEMS.filter((item) => !item.seniorOnly || hasBoardingModule(mode))
+  const menuActive = MENU_NAV.some((item) => isActivePath(pathname, item.href))
 
   return (
-    <nav aria-label="Main">
-      <ul className="flex flex-wrap items-center gap-1">
-        {items.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(`${item.href}/`)
+    <nav
+      aria-label="Main"
+      className="flex max-w-full items-center gap-1 rounded-full border border-border bg-surface p-1 shadow-md"
+    >
+      <ul className="flex items-center gap-1 overflow-x-auto">
+        {PILL_NAV.map((item) => {
+          const active = isActivePath(pathname, item.href)
           return (
             <li key={item.href}>
               <Link
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
-                className={`inline-flex items-center rounded-full px-4 py-1.5 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+                className={cn(
+                  'inline-flex items-center rounded-full px-4 py-1.5 text-sm transition-colors',
+                  focusRing,
                   active
-                    ? 'bg-primary text-primary-foreground font-medium'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                }`}
+                    ? 'bg-primary font-medium text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                )}
               >
                 {item.label}
               </Link>
@@ -50,6 +47,28 @@ export function PillNav({ mode }: { mode: OperatingMode }) {
           )
         })}
       </ul>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          aria-label="More"
+          className={cn(
+            'inline-flex size-8 shrink-0 items-center justify-center rounded-full transition-colors',
+            focusRing,
+            menuActive
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+          )}
+        >
+          <EllipsisVerticalIcon className="size-4" aria-hidden="true" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-44">
+          {MENU_NAV.map((item) => (
+            <DropdownMenuItem key={item.href} asChild>
+              <Link href={item.href}>{item.label}</Link>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </nav>
   )
 }
