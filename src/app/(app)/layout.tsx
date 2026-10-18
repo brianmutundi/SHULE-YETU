@@ -5,6 +5,10 @@ import { PillNav } from './pill-nav'
 import { ThemeToggle } from './theme-toggle'
 import { SessionBadge } from './session-badge'
 
+// Resolves the session from cookies, so this layout cannot be prerendered.
+// Required on the layout as well as each page under Cache Components.
+export const instant = false
+
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await getSessionContext()
 

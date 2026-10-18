@@ -1,5 +1,6 @@
 import 'server-only'
 import { redirect } from 'next/navigation'
+import { connection } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import {
   getOperatingMode,
@@ -31,6 +32,12 @@ export interface SessionContext {
  * ever compares `school_type` (CLAUDE.md section 4A).
  */
 export async function getSessionContext(): Promise<SessionContext> {
+  // Under Cache Components this opts the whole route out of prerendering. It
+  // must come first: constructing the Supabase client reads Date.now()
+  // internally, and an unstable value reached during prerender fails the
+  // build. `instant = false` is not honoured on layouts.
+  await connection()
+
   const supabase = await createClient()
 
   const {
