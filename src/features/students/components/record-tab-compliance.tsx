@@ -109,6 +109,7 @@ function ConsentRow({
             </label>
             <RecordSelect
               name="lawfulBasis"
+              id={`${definition.kind}-basis`}
               defaultValue={entry?.lawfulBasis ?? 'consent'}
               options={BASES}
             />

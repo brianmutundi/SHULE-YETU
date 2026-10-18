@@ -54,6 +54,7 @@ export function RecordField({
 /** A labelled dropdown, styled to match Input. */
 export function RecordSelect({
   name,
+  id,
   defaultValue,
   options,
   error,
@@ -61,6 +62,12 @@ export function RecordSelect({
   blank,
 }: {
   name: string
+  /**
+   * Explicit id. Defaults to the name, which is only safe when one control of
+   * that name exists per page; repeated controls must pass a unique id or the
+   * ids collide and their labels point at nothing.
+   */
+  id?: string
   defaultValue?: string | null
   options: readonly (readonly [string, string])[]
   error?: string
@@ -69,7 +76,7 @@ export function RecordSelect({
 }) {
   return (
     <select
-      id={name}
+      id={id ?? name}
       name={name}
       defaultValue={defaultValue ?? ''}
       required={required}
