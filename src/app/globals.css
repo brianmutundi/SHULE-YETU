@@ -7,9 +7,12 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  /* --font-work-sans is injected by next/font in app/layout.tsx. The theme
+     token must have a different name from the variable it reads, or it
+     resolves to itself and the font silently falls back. */
+  --font-sans: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-heading: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,6 +52,18 @@
   --color-primary-soft: var(--primary-soft);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-chip-status: var(--chip-status);
+  --color-chip-status-foreground: var(--chip-status-foreground);
+  --color-chip-gender: var(--chip-gender);
+  --color-chip-gender-foreground: var(--chip-gender-foreground);
+  --color-chip-class: var(--chip-class);
+  --color-chip-class-foreground: var(--chip-class-foreground);
+  --color-chip-relation: var(--chip-relation);
+  --color-chip-relation-foreground: var(--chip-relation-foreground);
+  --color-chip-neutral: var(--chip-neutral);
+  --color-chip-neutral-foreground: var(--chip-neutral-foreground);
+  --color-chip-warning: var(--chip-warning);
+  --color-chip-warning-foreground: var(--chip-warning-foreground);
 }
 
 :root {
@@ -58,9 +73,9 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.51 0.24 293);
-  --primary-soft: oklch(0.94 0.03 293);
-  --primary-foreground: oklch(0.99 0.005 293);
+  --primary: oklch(0.72 0.12 295);
+  --primary-soft: oklch(0.94 0.035 295);
+  --primary-foreground: oklch(0.2 0.05 293);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -70,7 +85,7 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: oklch(0.62 0.15 295);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -79,6 +94,20 @@
   --radius: 0.625rem;
   --surface: oklch(1 0 0);
   --surface-2: oklch(0.975 0.003 293);
+  /* Pastel chips: status green, gender orange, class blue. Text is dark on a
+     light fill so every pair clears AA. */
+  --chip-status: oklch(0.93 0.07 150);
+  --chip-status-foreground: oklch(0.34 0.09 150);
+  --chip-gender: oklch(0.94 0.06 65);
+  --chip-gender-foreground: oklch(0.4 0.1 55);
+  --chip-class: oklch(0.93 0.04 245);
+  --chip-class-foreground: oklch(0.38 0.11 255);
+  --chip-relation: oklch(0.93 0.045 295);
+  --chip-relation-foreground: oklch(0.38 0.12 293);
+  --chip-neutral: oklch(0.94 0.003 260);
+  --chip-neutral-foreground: oklch(0.4 0.01 260);
+  --chip-warning: oklch(0.95 0.08 90);
+  --chip-warning-foreground: oklch(0.42 0.09 75);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -96,9 +125,9 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.72 0.17 293);
-  --primary-soft: oklch(0.28 0.06 293);
-  --primary-foreground: oklch(0.14 0.01 293);
+  --primary: oklch(0.78 0.11 295);
+  --primary-soft: oklch(0.3 0.06 295);
+  --primary-foreground: oklch(0.18 0.04 293);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -108,7 +137,7 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.51 0.24 293);
+  --ring: oklch(0.7 0.13 295);
   --chart-1: oklch(0.65 0.17 293);
   --chart-2: oklch(0.62 0.14 255);
   --chart-3: oklch(0.70 0.13 195);
@@ -124,6 +153,18 @@
   --sidebar-ring: oklch(0.556 0 0);
   --surface: oklch(0.18 0.005 293);
   --surface-2: oklch(0.225 0.008 293);
+  --chip-status: oklch(0.32 0.07 150);
+  --chip-status-foreground: oklch(0.88 0.12 150);
+  --chip-gender: oklch(0.34 0.07 60);
+  --chip-gender-foreground: oklch(0.9 0.09 65);
+  --chip-class: oklch(0.32 0.07 250);
+  --chip-class-foreground: oklch(0.88 0.08 245);
+  --chip-relation: oklch(0.33 0.07 295);
+  --chip-relation-foreground: oklch(0.89 0.08 295);
+  --chip-neutral: oklch(0.31 0.005 260);
+  --chip-neutral-foreground: oklch(0.85 0.01 260);
+  --chip-warning: oklch(0.34 0.07 85);
+  --chip-warning-foreground: oklch(0.9 0.1 90);
 }
 
 @layer base {
