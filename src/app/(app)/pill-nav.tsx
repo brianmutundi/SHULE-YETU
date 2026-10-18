@@ -19,6 +19,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/assessments', label: 'Assessments' },
   { href: '/boarding', label: 'Boarding', seniorOnly: true },
   { href: '/classes', label: 'Classes' },
+  { href: '/transitions', label: 'Transitions' },
   { href: '/settings', label: 'Settings' },
 ]
 

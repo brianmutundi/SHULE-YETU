@@ -489,7 +489,7 @@ A feature is done only when:
 5. **Enrollment wizard** with draft autosave and atomic submit. **Senior intake/placement flow.** (DONE. Draft autosave and the separate senior intake screen are NOT built; the wizard's senior step 2 covers placement inline. Documents are collected in Phase 6.)
 6. **Full Student Record** tabs, medical, logistics, documents, consents. (DONE. `/students/[id]` with Bio and admission, Family and contact, Academic, Medical, Logistics and finance, Docs and compliance. Finance, results and document upload show explicit "not available yet" states pointing at their phases. `student_academic_profile` was dropped as a duplicate of `students.previous_school`.)
 7. **Bulk import.** (DONE. Two-step flow: stage then confirm. The template writer, parser and validator are `lib/import/`. Rows are staged in `import_batch_rows` and the confirm step sends only a batch id, so the rows written are the rows the server validated rather than whatever the browser held. `app.import_students()` writes row by row inside an exception block per row, so a bad row never blocks a good one, and duplicates are re-checked at write time. Guardians are reused on name + phone so siblings share one record.) (IN PROGRESS, being built in parallel - not reviewed by the phases 5-6 work.)
-8. **Transitions:** sessions, years, promotion engine with dry-run, rollback and **mode-aware chains plus exit-checkpoint holds**.
+8. **Transitions:** sessions, years, promotion engine with dry-run, rollback and **mode-aware chains plus exit-checkpoint holds**. (DONE. `/transitions` with Sessions, Academic years and Promotions tabs. `audit_log`, `checkpoint_results`, `promotion_runs` and `promotion_run_items` are added in migration 0026. `app.promotion_plan()` is the dry run and writes nothing; `app.run_promotion()` commits, and is atomic by proving the whole plan executable before writing anything rather than by catching errors. Per-learner prior state is recorded so `app.rollback_promotion()` restores exactly. Both stream strategies are offered at promotion time per `[A11]`. Migrations 0027 to 0031 are fixes found by testing 0026.)
 9. **Attendance** and **Staff.**
 10. **Assessments:** learning areas and strands, subjects and pathways, rubric, marks entry, SBA, checkpoints, report cards, transcript.
 11. **Fees and Payments:** structures, invoices, payments, reversals, debtors, receipts, **M-Pesa and SMS adapters with sandbox mode and tests against recorded Daraja payloads**.
@@ -520,7 +520,7 @@ pnpm exec supabase gen types typescript --linked > src/lib/supabase/types.ts
 
 **School type and structure**
 - `[A1]` Whether `senior` may ever combine with any other type. Currently modelled as never.
-- `[A11]` "Keep students in their current streams" on promotion. Kenyan schools often re-shuffle streams; the UI text and the earlier assumption disagree.
+- `[A11]` **RESOLVED: the admin chooses at promotion time.** The dry run shows both options - `keep` (same stream label) and `balance` (re-shuffled to even out the next class) - and the run records which was used. This is a genuine school-by-school decision, so neither is presented as the default. `promotion_runs.stream_strategy` records the choice.
 
 **Placement**
 - `[A2]` How Grade 9 to Grade 10 placement data reaches a Senior school: import format, KEMIS source, and timing.

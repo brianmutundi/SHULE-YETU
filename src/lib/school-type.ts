@@ -181,14 +181,37 @@ export function getExitCheckpoints(schoolType: SchoolType): readonly ExitCheckpo
   return SCHOOL_TYPE_DEFINITIONS[schoolType].exitCheckpoints
 }
 
+/** Which exit checkpoint, if any, applies to a class label. */
+const EXIT_CHECKPOINT_CLASS: Record<string, ExitCheckpoint> = {
+  'Grade 6': 'KPSEA',
+  'Grade 9': 'KJSEA',
+}
+
 /**
  * True when promotion through `classLabel` should be blocked pending an exit
  * result. Senior mode never holds learners.
+ *
+ * Keyed off the class's own checkpoint rather than the school's terminal class.
+ * A combined primary and junior school has TWO checkpoint classes, Grade 6 and
+ * Grade 9, and only Grade 9 is terminal. Comparing against terminalClass alone
+ * silently dropped the Grade 6 hold, which disagreed with app.exit_checkpoint_for()
+ * in Postgres and would have shown an admin the wrong list of held learners.
  */
 export function isExitCheckpointClass(schoolType: SchoolType, classLabel: string): boolean {
   const definition = SCHOOL_TYPE_DEFINITIONS[schoolType]
   if (definition.exitCheckpoints.length === 0) return false
-  return definition.terminalClass === classLabel
+
+  const checkpoint = EXIT_CHECKPOINT_CLASS[classLabel]
+  return checkpoint !== undefined && definition.exitCheckpoints.includes(checkpoint)
+}
+
+/** The checkpoint code for a class label, or null when none applies. */
+export function getExitCheckpointForClass(
+  schoolType: SchoolType,
+  classLabel: string,
+): ExitCheckpoint | null {
+  if (!isExitCheckpointClass(schoolType, classLabel)) return null
+  return EXIT_CHECKPOINT_CLASS[classLabel]
 }
 
 /**

@@ -80,6 +80,131 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          details: Json
+          entity_id: string | null
+          entity_type: string
+          id: string
+          tenant_id: string
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          tenant_id: string
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checkpoint_results: {
+        Row: {
+          academic_year_id: string
+          checkpoint: string
+          created_at: string
+          id: string
+          recorded_at: string | null
+          recorded_by: string | null
+          released_at: string | null
+          score: number | null
+          status: string
+          student_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          academic_year_id: string
+          checkpoint: string
+          created_at?: string
+          id?: string
+          recorded_at?: string | null
+          recorded_by?: string | null
+          released_at?: string | null
+          score?: number | null
+          status?: string
+          student_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          academic_year_id?: string
+          checkpoint?: string
+          created_at?: string
+          id?: string
+          recorded_at?: string | null
+          recorded_by?: string | null
+          released_at?: string | null
+          score?: number | null
+          status?: string
+          student_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkpoint_results_academic_year_id_fkey"
+            columns: ["academic_year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkpoint_results_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkpoint_results_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkpoint_results_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           created_at: string
@@ -469,6 +594,196 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promotion_run_items: {
+        Row: {
+          created_at: string
+          from_class_id: string | null
+          from_status: Database["public"]["Enums"]["student_status"] | null
+          from_stream_id: string | null
+          id: string
+          outcome: string
+          reason: string | null
+          run_id: string
+          student_id: string
+          tenant_id: string
+          to_status: Database["public"]["Enums"]["student_status"] | null
+          to_stream_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          from_class_id?: string | null
+          from_status?: Database["public"]["Enums"]["student_status"] | null
+          from_stream_id?: string | null
+          id?: string
+          outcome: string
+          reason?: string | null
+          run_id: string
+          student_id: string
+          tenant_id: string
+          to_status?: Database["public"]["Enums"]["student_status"] | null
+          to_stream_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          from_class_id?: string | null
+          from_status?: Database["public"]["Enums"]["student_status"] | null
+          from_stream_id?: string | null
+          id?: string
+          outcome?: string
+          reason?: string | null
+          run_id?: string
+          student_id?: string
+          tenant_id?: string
+          to_status?: Database["public"]["Enums"]["student_status"] | null
+          to_stream_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotion_run_items_from_class_id_fkey"
+            columns: ["from_class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_run_items_from_stream_id_fkey"
+            columns: ["from_stream_id"]
+            isOneToOne: false
+            referencedRelation: "streams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_run_items_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "promotion_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_run_items_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_run_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_run_items_to_stream_id_fkey"
+            columns: ["to_stream_id"]
+            isOneToOne: false
+            referencedRelation: "streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promotion_runs: {
+        Row: {
+          completed_count: number
+          created_at: string
+          failed_count: number
+          from_session_id: string
+          from_year_id: string
+          graduated_count: number
+          held_count: number
+          id: string
+          note: string | null
+          promoted_count: number
+          rolled_back_at: string | null
+          started_by: string | null
+          status: string
+          stream_strategy: string
+          summary: Json
+          tenant_id: string
+          to_year_id: string
+          total_students: number
+          updated_at: string
+        }
+        Insert: {
+          completed_count?: number
+          created_at?: string
+          failed_count?: number
+          from_session_id: string
+          from_year_id: string
+          graduated_count?: number
+          held_count?: number
+          id?: string
+          note?: string | null
+          promoted_count?: number
+          rolled_back_at?: string | null
+          started_by?: string | null
+          status?: string
+          stream_strategy?: string
+          summary?: Json
+          tenant_id: string
+          to_year_id: string
+          total_students?: number
+          updated_at?: string
+        }
+        Update: {
+          completed_count?: number
+          created_at?: string
+          failed_count?: number
+          from_session_id?: string
+          from_year_id?: string
+          graduated_count?: number
+          held_count?: number
+          id?: string
+          note?: string | null
+          promoted_count?: number
+          rolled_back_at?: string | null
+          started_by?: string | null
+          status?: string
+          stream_strategy?: string
+          summary?: Json
+          tenant_id?: string
+          to_year_id?: string
+          total_students?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotion_runs_from_session_id_fkey"
+            columns: ["from_session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_runs_from_year_id_fkey"
+            columns: ["from_year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_runs_started_by_fkey"
+            columns: ["started_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_runs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_runs_to_year_id_fkey"
+            columns: ["to_year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
             referencedColumns: ["id"]
           },
         ]
@@ -1156,14 +1471,49 @@ export type Database = {
         Args: { p_from_year: string; p_replace?: boolean; p_to_year: string }
         Returns: number
       }
+      close_session: { Args: { p_session: string }; Returns: undefined }
+      create_academic_year: {
+        Args: {
+          p_calendar_year: number
+          p_ends_on?: string
+          p_starts_on?: string
+        }
+        Returns: string
+      }
+      discard_promotion_run: {
+        Args: { p_reason: string; p_run_id: string }
+        Returns: undefined
+      }
       enrol_student: { Args: { p_payload: Json }; Returns: string }
       ensure_streams: {
         Args: { p_labels?: string[]; p_tenant: string; p_year: string }
         Returns: number
       }
+      ensure_streams_for_year: { Args: { p_year: string }; Returns: number }
       import_students: { Args: { p_batch: string }; Returns: Json }
       next_student_no: { Args: { p_tenant: string }; Returns: string }
+      open_session: { Args: { p_session: string }; Returns: undefined }
+      promotion_plan: {
+        Args: { p_from_year: string; p_strategy?: string; p_to_year: string }
+        Returns: Json
+      }
+      rollback_promotion: { Args: { p_run_id: string }; Returns: Json }
+      run_promotion: {
+        Args: { p_note?: string; p_run_id: string }
+        Returns: Json
+      }
+      set_current_academic_year: {
+        Args: { p_year: string }
+        Returns: undefined
+      }
       student_directory_stats: { Args: never; Returns: Json }
+      term_admission_counts: {
+        Args: never
+        Returns: {
+          admissions: number
+          session_id: string
+        }[]
+      }
     }
     Enums: {
       app_role:
