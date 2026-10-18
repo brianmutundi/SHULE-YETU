@@ -39,6 +39,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      academic_years: {
+        Row: {
+          calendar_year: number
+          created_at: string
+          ends_on: string
+          id: string
+          is_current: boolean
+          starts_on: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          calendar_year: number
+          created_at?: string
+          ends_on: string
+          id?: string
+          is_current?: boolean
+          starts_on: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          calendar_year?: number
+          created_at?: string
+          ends_on?: string
+          id?: string
+          is_current?: boolean
+          starts_on?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academic_years_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           created_at: string
@@ -157,6 +198,63 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          academic_year_id: string
+          closing_on: string
+          created_at: string
+          id: string
+          midterm_break_on: string | null
+          name: string
+          opened_on: string
+          status: string
+          tenant_id: string
+          term_number: number
+          updated_at: string
+        }
+        Insert: {
+          academic_year_id: string
+          closing_on: string
+          created_at?: string
+          id?: string
+          midterm_break_on?: string | null
+          name: string
+          opened_on: string
+          status?: string
+          tenant_id: string
+          term_number: number
+          updated_at?: string
+        }
+        Update: {
+          academic_year_id?: string
+          closing_on?: string
+          created_at?: string
+          id?: string
+          midterm_break_on?: string | null
+          name?: string
+          opened_on?: string
+          status?: string
+          tenant_id?: string
+          term_number?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_academic_year_id_fkey"
+            columns: ["academic_year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"

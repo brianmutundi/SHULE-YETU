@@ -1,24 +1,33 @@
-import { Badge } from '@/components/ui/badge'
+import { getAcademicPeriod } from '@/lib/auth/period'
 import type { OperatingMode } from '@/lib/school-type'
+import { Badge } from '@/components/ui/badge'
+import { PeriodSelector } from './period-selector'
 
 /**
- * The session badge. Academic year and term land here in Phase 2; for now it
- * carries the school type, which is the context everything else is filtered by.
+ * The session badge is the app-wide context (section 6). It carries the
+ * school type, the operating mode, and the academic year and term selectors.
+ *
+ * School type is informational only and deliberately not editable here.
  */
-export function SessionBadge({
-  schoolTypeLabel,
-  mode,
-}: {
-  schoolTypeLabel: string
-  mode: OperatingMode
-}) {
+export async function SessionBadge({ mode }: { mode: OperatingMode }) {
+  const { period, years, terms } = await getAcademicPeriod()
+
   return (
-    <Badge variant="secondary" className="gap-1.5">
-      <span>{schoolTypeLabel}</span>
-      <span aria-hidden="true" className="text-muted-foreground">
-        ·
-      </span>
-      <span className="text-muted-foreground">{mode === 'senior' ? 'Senior mode' : 'Basic mode'}</span>
-    </Badge>
+    <div className="flex flex-wrap items-center gap-2">
+      <Badge variant="secondary" className="gap-1.5">
+        <span>{mode === 'senior' ? 'Senior mode' : 'Basic mode'}</span>
+      </Badge>
+
+      {period ? (
+        <PeriodSelector
+          years={years}
+          terms={terms}
+          calendarYear={period.calendarYear}
+          termNumber={period.termNumber}
+        />
+      ) : (
+        <Badge variant="outline">No academic year set up</Badge>
+      )}
+    </div>
   )
 }

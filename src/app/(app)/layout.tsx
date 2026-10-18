@@ -20,10 +20,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             {session.tenantName}
           </Link>
 
-          <SessionBadge
-            schoolTypeLabel={session.schoolTypeDefinition.label}
-            mode={session.operatingMode}
-          />
+          <SessionBadge mode={session.operatingMode} />
 
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
