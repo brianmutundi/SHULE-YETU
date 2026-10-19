@@ -46,7 +46,13 @@ export default async function AppLayout({
           </Button>
           <ThemeToggle />
           <form action={signOut}>
-            <Button type="submit" variant="destructive" size="icon" aria-label="Sign out">
+            <Button
+              type="submit"
+              variant="outline"
+              size="icon"
+              aria-label="Sign out"
+              className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
               <LogOutIcon aria-hidden="true" />
             </Button>
           </form>

@@ -34,10 +34,13 @@ export function PillNav() {
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'inline-flex items-center rounded-full px-4 py-1.5 text-sm transition-colors',
+                  'relative inline-flex items-center rounded-full px-4 py-1.5 text-sm transition-colors',
                   focusRing,
+                  // Active: foreground text (black in light, white in dark) plus
+                  // a lavender underline bar. The bar is decoration; aria-current
+                  // and the bolder weight carry the state.
                   active
-                    ? 'bg-primary font-medium text-primary-foreground'
+                    ? 'font-semibold text-foreground after:absolute after:inset-x-4 after:bottom-0.5 after:h-0.5 after:rounded-full after:bg-primary'
                     : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                 )}
               >
@@ -55,7 +58,7 @@ export function PillNav() {
             'inline-flex size-8 shrink-0 items-center justify-center rounded-full transition-colors',
             focusRing,
             menuActive
-              ? 'bg-primary text-primary-foreground'
+              ? 'text-foreground ring-2 ring-primary'
               : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
           )}
         >
