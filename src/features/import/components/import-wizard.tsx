@@ -176,7 +176,11 @@ export function ImportWizard({ mode }: { mode: OperatingMode }) {
             headers.
           </p>
           <Button asChild variant="outline">
-            <a href="/api/import/template">Download the template</a>
+            {/* `download` keeps this a file download. The route handler returns an
+                .xlsx, so <Link> would be wrong here: it would client-navigate. */}
+            <a href="/api/import/template" download>
+              Download the template
+            </a>
           </Button>
         </CardContent>
       </Card>

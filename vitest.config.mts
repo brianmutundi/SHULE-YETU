@@ -24,5 +24,12 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/unit/**/*.test.ts'],
+
+    // The first test to import `lib/import/parse` pays for transforming the
+    // whole exceljs dependency tree, which takes ~12s on a cold cache on
+    // Windows. The default 5s timeout turns that into a spurious failure that
+    // does not reproduce on a warm run. The tests themselves take ~1s.
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
   },
 })

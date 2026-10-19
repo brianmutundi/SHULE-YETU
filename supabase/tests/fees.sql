@@ -26,8 +26,10 @@ insert into ids values
   ('student', gen_random_uuid()), ('year', gen_random_uuid()), ('term', gen_random_uuid()),
   ('structure', gen_random_uuid());
 
+-- n.name must be qualified: ids also has a column called name, so an
+-- unqualified reference is ambiguous.
 insert into public.tenants (id, name, school_type)
-select id, name, 'primary'::public.school_type
+select ids.id, n.name, 'primary'::public.school_type
   from ids, lateral (select case ids.name when 'tenant_a' then 'School A' else 'School B' end as name) n
  where ids.name in ('tenant_a', 'tenant_b');
 
@@ -35,13 +37,30 @@ insert into auth.users (id, instance_id, aud, role, email)
 select id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', name || '@test.local'
   from ids where name in ('finance', 'teacher', 'other_finance');
 
+-- Inserting into auth.users fires app.handle_new_user(), which already creates
+-- a profile with no tenant and role 'viewer'. So this has to be an upsert, not
+-- an insert.
+--
+-- The guard trigger has to be off for it: a profile going from no tenant to a
+-- tenant is exactly the transition guard_profile_mutation protects, and this
+-- seed runs before set local role, so there is no owner to satisfy it. The
+-- whole file is one rolled-back transaction, so re-enabling it here changes
+-- nothing that survives.
+alter table public.profiles disable trigger profiles_guard_profile_mutation;
+
 insert into public.profiles (id, tenant_id, full_name, role)
 select i.id,
        case i.name when 'other_finance' then (select id from ids where name = 'tenant_b')
                    else (select id from ids where name = 'tenant_a') end,
        initcap(i.name),
        (case i.name when 'teacher' then 'teacher' else 'finance' end)::public.app_role
-  from ids i where i.name in ('finance', 'teacher', 'other_finance');
+  from ids i where i.name in ('finance', 'teacher', 'other_finance')
+on conflict (id) do update
+  set tenant_id  = excluded.tenant_id,
+      full_name  = excluded.full_name,
+      role       = excluded.role;
+
+alter table public.profiles enable trigger profiles_guard_profile_mutation;
 
 insert into public.academic_years (id, tenant_id, calendar_year, starts_on, ends_on, is_current)
 values ((select id from ids where name = 'year'), (select id from ids where name = 'tenant_a'),
@@ -133,22 +152,63 @@ begin
   exception when sqlstate '22023' then null;
   end;
 
-  -- Immutable: no edit, no delete
+  -- Immutable as a signed-in user.
+  --
+  -- payments carries only a SELECT policy, so an UPDATE or DELETE from
+  -- `authenticated` matches no row: RLS filters the row out and the statement
+  -- succeeds having changed nothing. It does NOT raise, so these assert the
+  -- payment is unchanged rather than that an exception was thrown.
+  update public.payments set amount = 1 where id = v_orig;
+  delete from public.payments where id = v_orig;
+
+  assert (select amount from public.payments where id = v_orig) = 800000,
+    'an update must not change the amount';
+  assert (select status from public.payments where id = v_orig) = 'reversed',
+    'a delete must not remove the payment';
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- 6b: the trigger, on the one path RLS cannot cover
+--
+-- RLS only protects the paths that go through PostgREST as a signed-in user.
+-- app.reverse_payment runs as SECURITY DEFINER and bypasses RLS, so the
+-- immutability trigger is the backstop: with the role reset (so RLS is off)
+-- every edit and delete must raise 23000.
+-- ---------------------------------------------------------------------------
+reset role;
+
+do $$
+declare
+  v_orig uuid := (select id from public.payments where idempotency_key = 'key-3');
+begin
   begin
     update public.payments set amount = 1 where id = v_orig;
-    assert false, 'update should be refused';
+    assert false, 'update must be refused by the trigger';
   exception when sqlstate '23000' then null;
   end;
+
   begin
     delete from public.payments where id = v_orig;
-    assert false, 'delete should be refused';
+    assert false, 'delete must be refused by the trigger';
   exception when sqlstate '23000' then null;
   end;
+
+  -- Marking a payment reversed by hand must be refused too: only
+  -- app.reverse_payment, which sets app.reversing, may make that transition.
+  begin
+    update public.payments set status = 'reversed' where id = v_orig;
+    assert false, 'a hand-rolled status flip must be refused';
+  exception when sqlstate '23000' then null;
+  end;
+
+  assert (select status from public.payments where id = v_orig) = 'reversed',
+    'the reversal stands after the refused writes';
 end $$;
 
 -- ---------------------------------------------------------------------------
 -- 7: a teacher can neither record nor read
 -- ---------------------------------------------------------------------------
+set local role authenticated;
 select set_config('request.jwt.claims',
   json_build_object('sub', (select id from ids where name = 'teacher'), 'role', 'authenticated')::text, true);
 
