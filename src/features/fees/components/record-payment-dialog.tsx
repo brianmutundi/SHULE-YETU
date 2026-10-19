@@ -15,7 +15,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { recordPayment, type FeeActionResult } from '../actions'
-import { formatMoney } from '../money'
+import { formatMoney, parseMoneyToMinor } from '../money'
 import {
   PAYMENT_METHOD_LABELS,
   PAYMENT_METHODS,
@@ -47,6 +47,7 @@ export function RecordPaymentDialog({
   studentId,
   studentName,
   sessionId,
+  balance,
   today,
   onClose,
   onRecordAnother,
@@ -54,6 +55,8 @@ export function RecordPaymentDialog({
   studentId: string
   studentName: string
   sessionId: string | null
+  /** Minor units owed before this payment; null when the term has no invoice yet. */
+  balance: number | null
   /** yyyy-MM-dd in Africa/Nairobi. */
   today: string
   onClose: () => void
@@ -63,6 +66,14 @@ export function RecordPaymentDialog({
   const [state, action] = useActionState<FeeActionResult | null, FormData>(recordPayment, null)
   const [method, setMethod] = useState<PaymentMethod>('mpesa')
   const [key] = useState(() => crypto.randomUUID())
+  const [amountText, setAmountText] = useState('')
+
+  // Live balance: what is owed minus what is being typed. Display only; the
+  // database computes the real balance when the payment is recorded.
+  const typedMinor = parseMoneyToMinor(amountText)
+  const remaining = balance === null ? null : Math.max(balance - (typedMinor ?? 0), 0)
+  const overpaid =
+    balance !== null && typedMinor !== null && typedMinor > balance ? typedMinor - balance : 0
 
   const fieldError = (name: string) =>
     state && !state.ok ? state.fieldErrors?.[name]?.[0] : undefined
@@ -108,7 +119,7 @@ export function RecordPaymentDialog({
                 Record another
               </Button>
               <Button variant="ghost" onClick={onClose}>
-                Done
+                Okay
               </Button>
             </div>
           </>
@@ -139,10 +150,29 @@ export function RecordPaymentDialog({
                   placeholder="12,500.00"
                   autoComplete="off"
                   required
+                  value={amountText}
+                  onChange={(e) => setAmountText(e.target.value)}
                 />
                 {fieldError('amount') && (
                   <p className="text-xs text-destructive" role="alert">
                     {fieldError('amount')}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="live-balance">Balance</Label>
+                <Input
+                  id="live-balance"
+                  readOnly
+                  aria-readonly="true"
+                  aria-live="polite"
+                  className="bg-surface-2"
+                  value={remaining === null ? 'No invoice yet' : formatMoney(remaining)}
+                />
+                {overpaid > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {formatMoney(overpaid)} above the balance is kept as credit.
                   </p>
                 )}
               </div>

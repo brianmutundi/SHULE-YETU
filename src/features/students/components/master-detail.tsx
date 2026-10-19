@@ -82,6 +82,7 @@ export function MasterDetail({
   canReverse,
   payIntent,
   payments,
+  balance,
   today,
 }: {
   pane: Pane
@@ -101,6 +102,8 @@ export function MasterDetail({
   /** From ?pay=. Opens the payment dialogs over the selected learner. */
   payIntent: PaymentIntent | null
   payments: PaymentPanelRow[]
+  /** Minor units owed this term, or null with no invoice. For Record Payment. */
+  balance: number | null
   /** yyyy-MM-dd in Africa/Nairobi. */
   today: string
 }) {
@@ -286,6 +289,7 @@ export function MasterDetail({
           studentId={profile.id}
           studentName={profile.fullName}
           sessionId={sessionId}
+          balance={balance}
           today={today}
           onClose={() => go({ pay: null })}
           onRecordAnother={() => setPayRound((r) => r + 1)}

@@ -2,7 +2,7 @@ import { getSessionContext } from '@/lib/auth/session'
 import { can } from '@/lib/auth/permissions'
 import { getAcademicPeriod } from '@/lib/auth/period'
 import { todayInNairobi } from '@/lib/dates'
-import { getStudentPaymentPanel } from '@/features/fees/queries'
+import { getStudentBalance, getStudentPaymentPanel } from '@/features/fees/queries'
 import { getRegistrationOptions } from '@/features/students/queries'
 import { QuickCreateStudent } from '@/features/students/components/quick-create-student'
 import {
@@ -44,7 +44,7 @@ export default async function StudentsPage({
         ? 'history'
         : null
 
-  const [students, guardians, profile, registrationOptions, payments] = await Promise.all([
+  const [students, guardians, profile, registrationOptions, payments, balance] = await Promise.all([
     getMasterStudents(search, { status, quick }),
     // Only search guardians when the guardians pane is open; otherwise the
     // query would run against a filter the user cannot see.
@@ -55,6 +55,10 @@ export default async function StudentsPage({
     pane === 'students' && selectedId && can(session.role, 'fee.view')
       ? getStudentPaymentPanel(selectedId)
       : Promise.resolve([]),
+    // Opening balance for the live Balance field in the Record Payment dialog.
+    payIntent === 'record' && selectedId && sessionId
+      ? getStudentBalance(selectedId, sessionId)
+      : Promise.resolve(null),
   ])
 
   return (
@@ -88,6 +92,7 @@ export default async function StudentsPage({
         canReverse={can(session.role, 'fee.reverse')}
         payIntent={payIntent}
         payments={payments}
+        balance={balance}
         today={todayInNairobi()}
       />
     </div>

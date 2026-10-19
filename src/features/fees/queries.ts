@@ -98,6 +98,28 @@ export async function getStudentPaymentPanel(studentId: string): Promise<Payment
   })
 }
 
+/**
+ * What a learner owes on one term's invoice, in minor units. Null when the
+ * term has no invoice yet (recording a payment creates it).
+ */
+export async function getStudentBalance(
+  studentId: string,
+  sessionId: string,
+): Promise<number | null> {
+  await connection()
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('student_balances')
+    .select('balance')
+    .eq('student_id', studentId)
+    .eq('session_id', sessionId)
+    .maybeSingle()
+
+  if (error) throw new Error(error.message)
+  return data?.balance ?? null
+}
+
 /** One receipt, or null when it does not exist or is outside this school. */
 export async function getReceipt(paymentId: string): Promise<ReceiptData | null> {
   await connection()
