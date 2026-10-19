@@ -19,7 +19,7 @@ type Tab = 'sessions' | 'years' | 'promotions'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'sessions', label: 'Sessions' },
-  { id: 'years', label: 'Academic years' },
+  { id: 'years', label: 'Academic Years' },
   { id: 'promotions', label: 'Promotions' },
 ]
 

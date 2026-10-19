@@ -9,7 +9,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { planPromotion, prepareTargetYear, rollbackPromotion, runPromotion } from '../actions'
 import {
   STRATEGY_LABELS,
-  STREAM_STRATEGIES,
   type PlanResult,
   type PromotionRunSummary,
   type RollbackResult,
@@ -224,31 +223,43 @@ export function PromotionsTab({
               </div>
 
               <div className="space-y-1">
-                <span className="text-xs text-muted-foreground">Streams</span>
-                <div role="radiogroup" aria-label="Stream assignment" className="flex flex-col gap-1">
-                  {STREAM_STRATEGIES.map((value) => (
-                    <label key={value} className="flex items-start gap-2 text-sm">
-                      <input
-                        type="radio"
-                        name="strategy"
-                        value={value}
-                        checked={strategy === value}
-                        onChange={() => setStrategy(value)}
-                        className="mt-1"
-                      />
-                      <span>
-                        {STRATEGY_LABELS[value].label}
-                        <span className="block text-xs text-muted-foreground">
-                          {STRATEGY_LABELS[value].help}
-                        </span>
-                      </span>
-                    </label>
-                  ))}
+                <span id="keep-streams-label" className="text-xs text-muted-foreground">
+                  Streams
+                </span>
+                {/* A switch posting the same `strategy` field the radios did:
+                    on = keep, off = balance. */}
+                <input type="hidden" name="strategy" value={strategy} />
+                <div className="flex items-start gap-3">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={strategy === 'keep'}
+                    aria-labelledby="keep-streams-text"
+                    onClick={() => setStrategy(strategy === 'keep' ? 'balance' : 'keep')}
+                    className={`relative mt-0.5 h-6 w-11 shrink-0 rounded-full border border-border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+                      strategy === 'keep' ? 'bg-primary' : 'bg-surface-2'
+                    }`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`absolute top-0.5 left-0.5 size-4.5 rounded-full bg-background shadow transition-transform ${
+                        strategy === 'keep' ? 'translate-x-5' : ''
+                      }`}
+                    />
+                  </button>
+                  <span id="keep-streams-text" className="text-sm">
+                    Keep students in their current streams
+                    <span className="block text-xs text-muted-foreground">
+                      {strategy === 'keep'
+                        ? STRATEGY_LABELS.keep.help
+                        : STRATEGY_LABELS.balance.help}
+                    </span>
+                  </span>
                 </div>
               </div>
             </div>
 
-            <Submit label="Run the dry run" pendingLabel="Planning..." />
+            <Submit label="Start Promotion" pendingLabel="Planning..." />
           </form>
 
           {planState && !planState.ok && (

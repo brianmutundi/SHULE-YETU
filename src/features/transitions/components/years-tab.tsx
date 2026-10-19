@@ -64,9 +64,9 @@ export function YearsTab({ years }: { years: YearRow[] }) {
           <caption className="sr-only">Academic years</caption>
           <thead className="border-b border-border bg-surface-2 text-left">
             <tr>
-              <th scope="col" className="px-4 py-2 font-medium">Year</th>
-              <th scope="col" className="px-4 py-2 font-medium">Starts</th>
-              <th scope="col" className="px-4 py-2 font-medium">Ends</th>
+              <th scope="col" className="px-4 py-2 font-medium">Name</th>
+              <th scope="col" className="px-4 py-2 font-medium">Year Start</th>
+              <th scope="col" className="px-4 py-2 font-medium">Year End</th>
               <th scope="col" className="px-4 py-2 text-right font-medium">Terms</th>
               <th scope="col" className="px-4 py-2 text-right font-medium">Learners</th>
               <th scope="col" className="px-4 py-2 font-medium">Status</th>
@@ -102,7 +102,7 @@ export function YearsTab({ years }: { years: YearRow[] }) {
             className="h-8 w-32 rounded-md border border-border bg-transparent px-2 text-sm"
           />
         </div>
-        <Submit label="Create year" pendingLabel="Creating..." />
+        <Submit label="Create Year" pendingLabel="Creating..." />
         {state?.ok && <span className="text-sm text-muted-foreground">Created.</span>}
       </form>
 

@@ -202,11 +202,11 @@ export function SessionsTab({ terms }: { terms: TermRow[] }) {
           <caption className="sr-only">Terms for this school</caption>
           <thead className="border-b border-border bg-surface-2 text-left">
             <tr>
-              <th scope="col" className="px-4 py-2 font-medium">Term</th>
-              <th scope="col" className="px-4 py-2 font-medium">Opens</th>
+              <th scope="col" className="px-4 py-2 font-medium">Name</th>
+              <th scope="col" className="px-4 py-2 font-medium">Date Opened</th>
               <th scope="col" className="px-4 py-2 font-medium">Midterm break</th>
               <th scope="col" className="px-4 py-2 font-medium">Closes</th>
-              <th scope="col" className="px-4 py-2 text-right font-medium">Admissions</th>
+              <th scope="col" className="px-4 py-2 text-right font-medium">New Admissions</th>
               <th scope="col" className="px-4 py-2 font-medium">Status</th>
               <th scope="col" className="px-4 py-2"><span className="sr-only">Actions</span></th>
             </tr>
@@ -228,7 +228,7 @@ export function SessionsTab({ terms }: { terms: TermRow[] }) {
       {adding ? (
         <Card>
           <CardHeader>
-            <CardTitle>Add a term</CardTitle>
+            <CardTitle>Create Session</CardTitle>
           </CardHeader>
           <CardContent>
             <TermForm onDone={() => setAdding(false)} />
@@ -236,7 +236,7 @@ export function SessionsTab({ terms }: { terms: TermRow[] }) {
         </Card>
       ) : (
         <Button variant="outline" onClick={() => setAdding(true)}>
-          Add a term
+          Create Session
         </Button>
       )}
 
