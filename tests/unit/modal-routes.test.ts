@@ -15,8 +15,15 @@ describe('modal routes for Classes and Transitions', () => {
     }
   })
 
-  it('clears the slot on any other navigation', () => {
-    expect(existsSync(`${app}/@modal/[...catchAll]/page.tsx`)).toBe(true)
+  it('falls back to the slot default on any other navigation', () => {
+    // default.tsx is what clears the slot. It used to be paired with a
+    // [...catchAll]/page.tsx doing the same job (returning null), but a
+    // catch-all inside a parallel slot at the group root makes Next drop
+    // sibling routes: /login and /register both 404, so a signed-out user
+    // can never reach the sign-in form. Two files returning null is one too
+    // many, and the catch-all was the one that broke routing.
+    expect(existsSync(`${app}/@modal/default.tsx`)).toBe(true)
+    expect(existsSync(`${app}/@modal/[...catchAll]/page.tsx`)).toBe(false)
   })
 
   it('renders the slot in the app layout', () => {
