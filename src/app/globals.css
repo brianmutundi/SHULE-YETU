@@ -86,11 +86,11 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.62 0.15 295);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --chart-1: oklch(0.62 0.15 295);
+  --chart-2: oklch(0.62 0.13 255);
+  --chart-3: oklch(0.66 0.11 195);
+  --chart-4: oklch(0.68 0.14 155);
+  --chart-5: oklch(0.70 0.15 50);
   --radius: 0.625rem;
   --surface: oklch(1 0 0);
   --surface-2: oklch(0.975 0.003 293);

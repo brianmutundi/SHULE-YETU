@@ -2406,6 +2406,30 @@ export type Database = {
       }
     }
     Functions: {
+      dashboard_debtors: {
+        Args: { p_session?: string }
+        Returns: { debtors: number; label: string; owed: number }[]
+      }
+      dashboard_kpis: {
+        Args: { p_session?: string }
+        Returns: Json
+      }
+      dashboard_payments_series: {
+        Args: { p_bucket?: string; p_from: string; p_to: string }
+        Returns: { bucket: string; entry_count: number; total: number }[]
+      }
+      dashboard_population: {
+        Args: Record<PropertyKey, never>
+        Returns: { boys: number; class_label: string; girls: number; sort_order: number }[]
+      }
+      dashboard_staff_breakdown: {
+        Args: { p_dimension: string }
+        Returns: { label: string; value: number }[]
+      }
+      dashboard_transactions: {
+        Args: { p_from: string; p_limit?: number; p_to: string }
+        Returns: Json
+      }
       fee_statement: {
         Args: { p_session: string; p_student: string }
         Returns: Json
