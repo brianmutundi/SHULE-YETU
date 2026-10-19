@@ -1,22 +1,15 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import type { ClassRow } from '../queries'
 import type { YearOption } from '@/lib/auth/period'
-import { cloneStreams, createStream, deleteStream, seedDefaultStreams } from '../actions'
+import { deleteStream, seedDefaultStreams } from '../actions'
+import { CloneStreamsDialog } from './clone-streams-dialog'
+import { CreateStreamDialog } from './create-stream-dialog'
 import { EditStreamLabelDialog } from './edit-stream-label-dialog'
 
 function Submit({
@@ -46,32 +39,25 @@ export function ClassesManager({
   calendarYear: number | null
   canManage: boolean
 }) {
-  const [createState, createAction] = useActionState(createStream, null)
-  const [cloneState, cloneAction] = useActionState(cloneStreams, null)
   const [seedState, seedAction] = useActionState(seedDefaultStreams, null)
 
-  const [targetClassId, setTargetClassId] = useState<string>('')
-  const [fromYear, setFromYear] = useState<string>('')
-  const [toYear, setToYear] = useState<string>('')
-
-  const effectiveClassId = targetClassId || classes[0]?.id || ''
 
   return (
     <div className="space-y-6">
-      {createState && !createState.ok && (
-        <Alert variant="destructive" role="alert">
-          <AlertDescription>{createState.error}</AlertDescription>
-        </Alert>
-      )}
-      {cloneState && !cloneState.ok && (
-        <Alert variant="destructive" role="alert">
-          <AlertDescription>{cloneState.error}</AlertDescription>
-        </Alert>
-      )}
       {seedState && !seedState.ok && (
         <Alert variant="destructive" role="alert">
           <AlertDescription>{seedState.error}</AlertDescription>
         </Alert>
+      )}
+
+      {canManage && (
+        <div className="flex flex-wrap justify-end gap-2">
+          <CloneStreamsDialog years={years} />
+          <CreateStreamDialog
+            classes={classes.map((c) => ({ id: c.id, label: c.label }))}
+            academicYearId={selectedYearId}
+          />
+        </div>
       )}
 
       <div className="overflow-x-auto rounded-lg border border-border">
@@ -139,44 +125,6 @@ export function ClassesManager({
       {canManage && (
         <>
           <section className="space-y-3 rounded-lg border border-border p-4">
-            <h2 className="text-sm font-semibold">Add a stream</h2>
-            <form action={createAction} className="flex flex-wrap items-end gap-3">
-              <input type="hidden" name="academicYearId" value={selectedYearId ?? ''} />
-
-              <div className="space-y-1">
-                <Label htmlFor="classId" className="text-xs">Class</Label>
-                <Select name="classId" value={effectiveClassId} onValueChange={setTargetClassId}>
-                  <SelectTrigger id="classId" size="sm" className="w-40">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {classes.map((row) => (
-                      <SelectItem key={row.id} value={row.id}>
-                        {row.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="label" className="text-xs">Stream name</Label>
-                <Input
-                  id="label"
-                  name="label"
-                  size={16}
-                  required
-                  maxLength={40}
-                  placeholder="East"
-                  className="w-32"
-                />
-              </div>
-
-              <Submit disabled={!effectiveClassId || !selectedYearId}>Add stream</Submit>
-            </form>
-          </section>
-
-          <section className="space-y-3 rounded-lg border border-border p-4">
             <h2 className="text-sm font-semibold">Seed A and B streams</h2>
             <p className="text-xs text-muted-foreground">
               Adds A and B to every class for the selected academic year, skipping any that already
@@ -190,55 +138,6 @@ export function ClassesManager({
             </form>
           </section>
 
-          <section className="space-y-3 rounded-lg border border-border p-4">
-            <h2 className="text-sm font-semibold">Clone streams into another year</h2>
-            <p className="text-xs text-muted-foreground">
-              Copies the stream layout only. No students move: promotion is a separate, audited,
-              reversible operation.
-            </p>
-            <form action={cloneAction} className="flex flex-wrap items-end gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="fromYear" className="text-xs">From year</Label>
-                <Select name="fromYear" value={fromYear} onValueChange={setFromYear}>
-                  <SelectTrigger id="fromYear" size="sm" className="w-36">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {years.map((year) => (
-                      <SelectItem key={year.id} value={year.id}>
-                        {year.calendarYear}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="toYear" className="text-xs">To year</Label>
-                <Select name="toYear" value={toYear} onValueChange={setToYear}>
-                  <SelectTrigger id="toYear" size="sm" className="w-36">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {years.map((year) => (
-                      <SelectItem key={year.id} value={year.id}>
-                        {year.calendarYear}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <label className="flex items-center gap-2 text-xs">
-                <input type="checkbox" name="replace" className="size-3.5" />
-                Replace existing streams in the target year
-              </label>
-
-              <Submit disabled={!fromYear || !toYear || fromYear === toYear}>
-                {cloneState?.ok ? `Cloned ${cloneState.copied ?? 0}` : 'Clone streams'}
-              </Submit>
-            </form>
-          </section>
         </>
       )}
     </div>
