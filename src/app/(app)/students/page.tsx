@@ -2,7 +2,7 @@ import { getSessionContext } from '@/lib/auth/session'
 import { can } from '@/lib/auth/permissions'
 import { getAcademicPeriod } from '@/lib/auth/period'
 import { todayInNairobi } from '@/lib/dates'
-import { getStudentPayments } from '@/features/fees/queries'
+import { getStudentPaymentPanel } from '@/features/fees/queries'
 import { getRegistrationOptions } from '@/features/students/queries'
 import { QuickCreateStudent } from '@/features/students/components/quick-create-student'
 import {
@@ -51,7 +51,10 @@ export default async function StudentsPage({
     getGuardiansWithStudents(pane === 'guardians' ? search : ''),
     pane === 'students' && selectedId ? getStudentProfile(selectedId, sessionId) : Promise.resolve(null),
     canEnrol ? getRegistrationOptions() : Promise.resolve(null),
-    payIntent === 'history' && selectedId ? getStudentPayments(selectedId) : Promise.resolve([]),
+    // Feeds the payments column (wide screens) and the history dialog (narrow).
+    pane === 'students' && selectedId && can(session.role, 'fee.view')
+      ? getStudentPaymentPanel(selectedId)
+      : Promise.resolve([]),
   ])
 
   return (

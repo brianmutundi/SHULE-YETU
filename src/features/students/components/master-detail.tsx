@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useSyncExternalStore, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeftIcon, BadgePercentIcon, MarsIcon, UsersIcon, VenusIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -14,7 +14,8 @@ import {
 } from '@/components/ui/select'
 import { RecordPaymentDialog } from '@/features/fees/components/record-payment-dialog'
 import { StudentPaymentsDialog } from '@/features/fees/components/student-payments-dialog'
-import type { PaymentRow } from '@/features/fees/types'
+import { StudentPaymentsColumn } from '@/features/fees/components/student-payments-column'
+import type { PaymentPanelRow } from '@/features/fees/types'
 import { AddGuardianDialog } from '@/features/guardians/components/add-guardian-dialog'
 import type {
   GuardianWithStudents,
@@ -35,6 +36,21 @@ import { StudentProfile } from './student-profile'
 import type { PaymentIntent } from './student-row-menu'
 
 export type Pane = 'students' | 'guardians'
+
+const XL_QUERY = '(min-width: 80rem)'
+
+/** True from Tailwind's xl breakpoint up. False on the server and first paint. */
+function useIsXl(): boolean {
+  return useSyncExternalStore(
+    (notify) => {
+      const mql = window.matchMedia(XL_QUERY)
+      mql.addEventListener('change', notify)
+      return () => mql.removeEventListener('change', notify)
+    },
+    () => window.matchMedia(XL_QUERY).matches,
+    () => false,
+  )
+}
 
 const QUICK_FILTER_UI: { value: QuickFilter; label: string; Icon: typeof MarsIcon }[] = [
   { value: 'male', label: 'Boys only', Icon: MarsIcon },
@@ -84,7 +100,7 @@ export function MasterDetail({
   canReverse: boolean
   /** From ?pay=. Opens the payment dialogs over the selected learner. */
   payIntent: PaymentIntent | null
-  payments: PaymentRow[]
+  payments: PaymentPanelRow[]
   /** yyyy-MM-dd in Africa/Nairobi. */
   today: string
 }) {
@@ -93,6 +109,7 @@ export function MasterDetail({
   const searchParams = useSearchParams()
   // Bumped by "Record another" so the dialog remounts with a fresh form and key.
   const [payRound, setPayRound] = useState(0)
+  const isXl = useIsXl()
   const [addParentFor, setAddParentFor] = useState<{ id: string; fullName: string } | null>(null)
 
   /** Apply a patch to the query string. null removes a key. */
@@ -114,9 +131,17 @@ export function MasterDetail({
 
   const hasSelection = selectedId !== null
   const showingGuardians = pane === 'guardians'
+  // The payments column needs a learner and permission; it sits beside the profile.
+  const showPaymentsColumn = !showingGuardians && profile !== null && canViewPayments
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,32rem)_minmax(0,1fr)]">
+    <div
+      className={`grid gap-4 ${
+        showPaymentsColumn
+          ? 'lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)_minmax(0,22rem)]'
+          : 'lg:grid-cols-[minmax(0,32rem)_minmax(0,1fr)]'
+      }`}
+    >
       {/* Left pane. On narrow screens it hides once something is selected. */}
       <div
         className={`overflow-hidden rounded-xl border border-border bg-surface ${
@@ -242,6 +267,19 @@ export function MasterDetail({
         )}
       </div>
 
+      {/* Third column, wide screens only. Narrower screens use the dialog below. */}
+      {showPaymentsColumn && profile && (
+        <div className="hidden xl:block">
+          <StudentPaymentsColumn
+            key={profile.id}
+            firstName={profile.firstName}
+            className={profile.classLabel ?? profile.classAdmitted}
+            payments={payments}
+            canReverse={canReverse}
+          />
+        </div>
+      )}
+
       {payIntent === 'record' && profile && (
         <RecordPaymentDialog
           key={`${profile.id}-${payRound}`}
@@ -253,7 +291,7 @@ export function MasterDetail({
           onRecordAnother={() => setPayRound((r) => r + 1)}
         />
       )}
-      {payIntent === 'history' && profile && (
+      {payIntent === 'history' && profile && !isXl && (
         <StudentPaymentsDialog
           studentId={profile.id}
           studentName={profile.fullName}

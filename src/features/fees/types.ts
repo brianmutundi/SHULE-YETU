@@ -72,6 +72,19 @@ export interface PaymentRow {
 }
 
 /**
+ * A payment as the Students payments column shows it: the entry plus the
+ * term it was billed in and what the learner still owes on that invoice.
+ * balance is the invoice's current balance, not a running balance at the
+ * time of the payment.
+ */
+export interface PaymentPanelRow extends PaymentRow {
+  /** "Term 1 • 2026", or null when the invoice's term cannot be read. */
+  termLabel: string | null
+  /** Minor units still owed on this payment's invoice; null when unknown. */
+  balance: number | null
+}
+
+/**
  * The RPCs return jsonb, which the generated types call Json. The shapes are
  * fixed by the SQL in 20261018010100_fees.sql, so they are narrowed here, in
  * one place, rather than cast at each call site.
