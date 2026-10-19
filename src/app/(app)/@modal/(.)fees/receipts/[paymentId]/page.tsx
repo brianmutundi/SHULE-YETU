@@ -15,7 +15,7 @@ export default async function ReceiptModal({ params }: { params: Promise<{ payme
   if (!receipt) notFound()
 
   return (
-    <RouteDialog title="Receipt" className="max-w-xl">
+    <RouteDialog title="Payment Receipt" className="max-w-xl">
       <ReceiptView receipt={receipt} showBack={false} />
     </RouteDialog>
   )

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeftIcon, PrinterIcon, Share2Icon } from 'lucide-react'
+import { ArrowLeftIcon, DownloadIcon, PrinterIcon, Share2Icon } from 'lucide-react'
 import { Chip } from '@/components/shared/chip'
 import { Button } from '@/components/ui/button'
 import { formatDate } from '@/lib/dates'
@@ -12,10 +12,12 @@ import type { ReceiptData } from '../types'
 import { EntryBadge } from './payment-badges'
 
 /**
- * Receipt (CLAUDE.md section 7.12): school header, "Tuition Receipt", learner,
- * chips for class, term, year and receipt number, then the amounts.
+ * Receipt (CLAUDE.md section 7.12): school header, "Payment Receipt", learner,
+ * chips for class, term, year and receipt number, bordered boxes for the
+ * amounts, Total Paid, a Sign/Stamp line and a thank-you.
  *
- * Print uses the browser, which also saves a PDF. Share uses the device share
+ * Print and Export PDF both use the browser's print dialog, which can save a
+ * PDF; no PDF library is added for this. Share uses the device share
  * sheet and falls back to copying the link.
  */
 export function ReceiptView({ receipt, showBack = true }: { receipt: ReceiptData; showBack?: boolean }) {
@@ -60,8 +62,17 @@ export function ReceiptView({ receipt, showBack = true }: { receipt: ReceiptData
             Share
           </Button>
           <Button variant="outline" size="sm" onClick={() => window.print()}>
+            <DownloadIcon aria-hidden="true" />
+            Export PDF
+          </Button>
+          <Button
+            size="icon"
+            className="rounded-full"
+            aria-label="Print receipt"
+            title="Print"
+            onClick={() => window.print()}
+          >
             <PrinterIcon aria-hidden="true" />
-            Print
           </Button>
         </div>
       </div>
@@ -87,7 +98,7 @@ export function ReceiptView({ receipt, showBack = true }: { receipt: ReceiptData
         </header>
 
         <div className="flex items-center gap-2">
-          <h3 className="text-base font-semibold">{isReversal ? 'Reversal Receipt' : 'Tuition Receipt'}</h3>
+          <h3 className="text-base font-semibold">{isReversal ? 'Reversal Receipt' : 'Payment Receipt'}</h3>
           <EntryBadge status={receipt.status} reversesPaymentId={receipt.reversesPaymentId} />
         </div>
 
@@ -106,29 +117,40 @@ export function ReceiptView({ receipt, showBack = true }: { receipt: ReceiptData
           </Chip>
         </div>
 
-        <dl className="space-y-2 border-t border-border pt-4 text-sm">
-          <Row label={isReversal ? 'Amount reversed' : 'Amount paid'} value={money(receipt.amount)} strong />
-          <Row label="Balance" value={money(receipt.balance)} />
-          {receipt.credit > 0 && <Row label="Credit" value={money(receipt.credit)} />}
-          <Row label="Total paid" value={money(receipt.totalPaid)} />
-          <Row label="Payment mode" value={methodLabel} />
+        <dl className="grid grid-cols-2 gap-2 border-t border-border pt-4 text-sm">
+          <Box label={isReversal ? 'Amount Reversed' : 'Amount Paid'} value={money(receipt.amount)} strong />
+          <Box label="Balance" value={money(receipt.balance)} />
+          <Box label="Payment Mode" value={methodLabel} />
+          <Box label="Payment Date" value={formatDate(receipt.paidAt)} />
+          <Box label="Received By" value={receipt.receivedBy ?? 'Not recorded'} />
           {receipt.reference && (
-            <Row
-              label={receipt.method === 'mpesa' ? 'M-Pesa transaction code' : 'Reference'}
+            <Box
+              label={receipt.method === 'mpesa' ? 'M-Pesa Transaction Code' : 'Reference'}
               value={receipt.reference}
               mono
             />
           )}
-          <Row label="Date" value={formatDate(receipt.paidAt)} />
-          <Row label="Received by" value={receipt.receivedBy ?? 'Not recorded'} />
-          {receipt.reason && <Row label="Reason" value={receipt.reason} />}
+          {receipt.credit > 0 && <Box label="Credit" value={money(receipt.credit)} />}
+          {receipt.reason && <Box label="Reason" value={receipt.reason} />}
         </dl>
+
+        <div className="flex items-baseline justify-between gap-4 border-t border-border pt-4">
+          <span className="text-sm text-muted-foreground">Total Paid</span>
+          <span className="text-lg font-semibold tabular-nums">{money(receipt.totalPaid)}</span>
+        </div>
+
+        <div className="pt-6">
+          <div className="h-px w-48 bg-foreground/60" aria-hidden="true" />
+          <p className="mt-1 text-xs text-muted-foreground">Sign / Stamp</p>
+        </div>
+
+        <p className="text-center text-sm text-muted-foreground">Thank you for your payment.</p>
       </article>
     </div>
   )
 }
 
-function Row({
+function Box({
   label,
   value,
   strong,
@@ -140,9 +162,11 @@ function Row({
   mono?: boolean
 }) {
   return (
-    <div className="flex justify-between gap-4">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className={`text-right ${strong ? 'font-semibold' : ''} ${mono ? 'font-mono' : ''}`}>{value}</dd>
+    <div className="rounded-lg border border-border p-3">
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className={`mt-0.5 break-words ${strong ? 'font-semibold' : ''} ${mono ? 'font-mono' : ''}`}>
+        {value}
+      </dd>
     </div>
   )
 }
