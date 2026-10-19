@@ -32,6 +32,14 @@ export async function GET(
 
   const supabase = await createClient()
 
+  // A class teacher gets the cards for their own class only.
+  const { data: mayIssue } = await supabase.rpc('can_issue_report_card_for', {
+    p_student: studentId,
+  })
+  if (!mayIssue) {
+    return NextResponse.json({ error: 'Not permitted.' }, { status: 403 })
+  }
+
   const { data: issued } = await supabase
     .from('report_cards')
     .select('id')

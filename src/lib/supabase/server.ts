@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { connection } from 'next/server'
 import type { Database } from './types'
 
 /**
@@ -9,6 +10,11 @@ import type { Database } from './types'
  * `cookies()` is async-only in Next.js 16; synchronous access was removed.
  */
 export async function createClient() {
+  // Under Cache Components, constructing the Supabase client reads Date.now().
+  // Opt out of prerendering first, or any page that builds a client before
+  // another dynamic access fails with "unstable value Date.now()".
+  await connection()
+
   const cookieStore = await cookies()
 
   return createServerClient<Database>(

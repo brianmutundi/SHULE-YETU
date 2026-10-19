@@ -52,7 +52,15 @@ export async function getSessionContext(): Promise<SessionContext> {
     .eq('id', user.id)
     .single()
 
-  if (profileError || !profile?.tenant_id) {
+  // A missing row (PGRST116) means the account has no school yet. Any other
+  // error is a real failure, such as a network fault, a missing migration or
+  // an RLS problem. Sending those to /register would hide the cause and make
+  // a healthy account look unregistered, so surface them instead.
+  if (profileError && profileError.code !== 'PGRST116') {
+    throw new Error(`Could not load your profile: ${profileError.message}`)
+  }
+
+  if (!profile?.tenant_id) {
     // Signed in but not yet attached to a school: send them to finish setting
     // one up. Redirecting to /login here would loop, because the proxy bounces
     // an authenticated visitor away from /login straight back to /home.

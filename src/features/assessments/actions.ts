@@ -268,6 +268,16 @@ export async function issueReportCards(
 
   const supabase = await createClient()
 
+  // Class teachers may only issue for the class they are assigned to. The
+  // database enforces this on the write; asking first gives a clear message
+  // instead of a row-level-security error.
+  const { data: mayIssue } = await supabase.rpc('can_issue_report_cards_for_stream', {
+    p_stream: streamId,
+  })
+  if (!mayIssue) {
+    return { ok: false, error: 'You can only issue report cards for the class you are assigned to.' }
+  }
+
   // Learners in the stream, so the issue list and the printed set agree.
   const { data: students, error: studentsError } = await supabase
     .from('students')

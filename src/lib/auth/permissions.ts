@@ -142,6 +142,7 @@ const PERMISSIONS: Record<app_role, RolePermissions> = {
     'attendance.mark',
     'attendance.view',
     'marks.record',
+    'report_card.issue',
   ],
 
   subject_teacher: ['student.view', 'attendance.mark', 'attendance.view', 'marks.record'],
